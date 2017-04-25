@@ -1,4 +1,4 @@
-package es.udc.fic.mri_indexer;
+package es.udc.fic.mri_searcher;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
