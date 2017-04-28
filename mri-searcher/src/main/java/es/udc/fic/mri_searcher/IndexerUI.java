@@ -52,6 +52,8 @@ public class IndexerUI {
 		    indexingModel = false;
 		    modelNumber = Float.valueOf(args[i+2]);
 		    i = i+2;
+		} else {
+		    i++;
 		}
 	    }
 	}

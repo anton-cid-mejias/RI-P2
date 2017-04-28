@@ -3,7 +3,6 @@ package es.udc.fic.mri_searcher;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,7 +16,6 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -25,11 +23,10 @@ import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-
 public class Indexer {
-    
-    public static void run(OpenMode openmode, String index, String coll, Similarity similarity)
-	    throws IOException {
+
+    public static void run(OpenMode openmode, String index, String coll,
+	    Similarity similarity) throws IOException {
 	try {
 	    System.out.println("Indexing to directory '" + index + "'...");
 
@@ -50,7 +47,7 @@ public class Indexer {
 		    + e.getMessage());
 	}
     }
-    
+
     private static void indexDocs(final IndexWriter writer, Path path)
 	    throws IOException {
 	if (Files.isDirectory(path)) {
@@ -81,77 +78,38 @@ public class Indexer {
     private static void indexDoc(IndexWriter writer, Path file,
 	    long lastModified) throws IOException {
 	try (InputStream stream = Files.newInputStream(file)) {
-	    List<List<String>> reuters = null;
-		    //CranParser
-	    		//.parseString(new StringBuffer(toString(stream)));
+	    List<List<String>> allCran = CranParser
+		    .parseString(new StringBuffer(toString(stream)));
 
-	    /*
-	     * FieldType t1 = new FieldType();
-	     * t1.setIndexOptions(IndexOptions.DOCS_AND_FREQS);
-	     * t1.setTokenized(true); t1.setStored(true);
-	     * t1.setStoreTermVectors(true); t1.freeze();
-	     * 
-	     * FieldType t2 = new FieldType(); t2.setStored(true);
-	     * t2.setStoreTermVectors(true);
-	     * t2.setIndexOptions(IndexOptions.DOCS_AND_FREQS); t2.freeze();
-	     */
-
-	    int number = 1;
-	    for (List<String> reuter : reuters) {
+	    for (List<String> cran : allCran) {
 		Document doc = new Document();
 
-		// Path of the file indexed is not needed, as there is only one document
-		// Order number in the document
-		Field seqDocNumberField = new StringField("SeqDocNumber",
-			Integer.toString(number), Field.Store.YES);
-		doc.add(seqDocNumberField);
-		// Field seqDocNumberField = new IntPoint("SeqDocNumber",
-		// number);
+		// Index
+		Field INDEX = new StringField("INDEX", cran.get(0),
+			Field.Store.YES);
+		doc.add(INDEX);
 
-		// doc.add(new StoredField("StoredSeqDocNumber", number));
-		number++;
-		// TITLE of the reuter
-		Field title = new TextField("TITLE", reuter.get(0),
+		// Title
+		Field TITLE = new StringField("TITLE", cran.get(1),
 			Field.Store.YES);
-		// Field title = new Field("TITLE", reuter.get(0), t1);
-		doc.add(title);
-		// BODY of the reuter
-		Field body = new TextField("BODY", reuter.get(1),
-			Field.Store.YES);
-		// Field body = new Field("BODY", reuter.get(1), t1);
-		doc.add(body);
-		// TOPICS of the reuter
-		Field topics = new TextField("TOPICS", reuter.get(2),
-			Field.Store.YES);
-		// Field topics = new Field("TOPICS", reuter.get(2), t1);
-		doc.add(topics);
-		// DATELINE of the reuter
-		Field dateline = new TextField("DATELINE", reuter.get(3),
-			Field.Store.YES);
-		// Field dateline = new Field("DATELINE", reuter.get(3), t1);
-		doc.add(dateline);
-		// DATE of the reuter
-		//Field date = new StringField("DATE", processDate(reuter.get(4)),
-		//	Field.Store.YES);
-		// Field date = new Field("DATE", processDate(reuter.get(4)),
-		// t2);
-		//doc.add(date);
-		// Hostname who execute the thread
-		Field hostname = new StringField("Hostname",
-			InetAddress.getLocalHost().getHostName(),
-			Field.Store.YES);
-		// Field hostname = new Field("Hostname",
-		// InetAddress.getLocalHost().getHostName(), t2);
-		doc.add(hostname);
-		// Thread executed
-		Field thread = new StringField("Thread",
-			Thread.currentThread().getName(), Field.Store.YES);
-		// Field thread = new Field("Thread",
-		// Thread.currentThread().getName(), t2);
-		doc.add(thread);
+		doc.add(TITLE);
 
+		// Author
+		Field AUTHOR = new StringField("AUTHOR", cran.get(2),
+			Field.Store.YES);
+		doc.add(AUTHOR);
+
+		// B
+		Field B = new StringField("B", cran.get(3), Field.Store.YES);
+		doc.add(B);
+
+		// Words: body of the doc
+		Field WORDS = new StringField("WORDS", cran.get(4),
+			Field.Store.YES);
+		doc.add(WORDS);
+		
 		System.out.println(
-			"adding " + file + " : REUTER " + (number - 1));
+			"adding document : Cran " + cran.get(0) );
 		writer.addDocument(doc);
 
 	    }
@@ -171,6 +129,8 @@ public class Indexer {
 
     private static boolean checkCranCollection(Path file) {
 	String fileName = file.toString();
+	int p = Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
+	fileName= fileName.substring(p + 1);
 	return "cran.all.1400".equals(fileName);
     }
 
