@@ -3,7 +3,7 @@ package es.udc.fic.mri_searcher;
 import java.util.LinkedList;
 import java.util.List;
 
-public class CranRelParser2 {
+public class CranRelParser {
 	
     public static List<List<String>> parseString(StringBuffer fileContent) {
 
