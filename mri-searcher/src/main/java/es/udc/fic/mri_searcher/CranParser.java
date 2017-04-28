@@ -4,64 +4,23 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class CranParser {
-
-    /*
-     * Project testlucene 3.6.0, the Reuters21578Parser class parses the
-     * collection.
-     */
-
-    private static final String END_BOILERPLATE_1 = "Reuter&#3;";
-    private static final String END_BOILERPLATE_2 = "REUTER&#3;";
-
-    // private static final String[] TOPICS = { "acq", "alum", "austdlr",
-    // "barley", "bean", "belly", "bfr", "bop", "cake", "can", "carcass",
-    // "castor", "castorseed", "cattle", "chem", "citruspulp", "cocoa",
-    // "coconut", "coffee", "copper", "copra", "corn", "cornglutenfeed",
-    // "cotton", "cottonseed", "cpi", "cpu", "crude", "cruzado", "debt",
-    // "dfl", "dkr", "dlr", "dmk", "earn", "f", "feed", "fishmeal",
-    // "fuel", "fx", "gas", "gnp", "gold", "grain", "groundnut", "heat",
-    // "hk", "hog", "housing", "income", "instal", "interest",
-    // "inventories", "ipi", "iron", "jet", "jobs", "l", "lead", "lei",
-    // "lin", "linseed", "lit", "livestock", "lumber", "meal", "metal",
-    // "money", "naphtha", "nat", "nickel", "nkr", "nzdlr", "oat", "oil",
-    // "oilseed", "orange", "palladium", "palm", "palmkernel", "peseta",
-    // "pet", "platinum", "plywood", "pork", "potato", "propane", "rand",
-    // "rape", "rapeseed", "red", "reserves", "retail", "rice", "ringgit",
-    // "rubber", "rupiah", "rye", "saudriyal", "sfr", "ship", "silver",
-    // "skr", "sorghum", "soy", "soybean", "steel", "stg", "strategic",
-    // "sugar", "sun", "sunseed", "supply", "tapioca", "tea", "tin",
-    // "trade", "veg", "wheat", "wool", "wpi", "yen", "zinc" };
-
+	
     public static List<List<String>> parseString(StringBuffer fileContent) {
-	/* First the contents are converted to a string */
+
 	String text = fileContent.toString();
-
-	/*
-	 * The method split of the String class splits the strings using the
-	 * delimiter which was passed as argument Therefor lines is an array of
-	 * strings, one string for each line
-	 */
 	String[] lines = text.split("\n");
-
-	/*
-	 * For each Reuters article the parser returns a list of strings where
-	 * each element of the list is a field (TITLE, BODY, TOPICS, DATELINE).
-	 * Each *.sgm file that is passed in fileContent can contain many
-	 * Reuters articles, so finally the parser returns a list of list of
-	 * strings, i.e, a list of reuters articles, that is what the object
-	 * documents contains
-	 */
 
 	List<List<String>> documents = new LinkedList<List<String>>();
 
-	/* The tag REUTERS identifies the beginning and end of each article */
+	/* The word .I identifies the beginning of each article */
 
 	for (int i = 0; i < lines.length; ++i) {
-	    if (!lines[i].startsWith("<REUTERS"))
+	    if (!lines[i].startsWith(".I"))
 		continue;
 	    StringBuilder sb = new StringBuilder();
-	    while (!lines[i].startsWith("</REUTERS")) {
-		sb.append(lines[i++]);
+	    while (!lines[i].startsWith(".I")) {
+		sb.append(lines[i]);
+		i++;
 		sb.append("\n");
 	    }
 	    /*
@@ -78,61 +37,49 @@ public class CranParser {
     public static List<String> handleDocument(String text) {
 
 	/*
-	 * This method returns the Reuters article that is passed as text as a
+	 * This method returns the Cran article that is passed as text as a
 	 * list of fields
 	 */
 
-	/* The fields TOPICS, TITLE, DATELINE and BODY are extracted */
-	/* Each topic inside TOPICS is identified with a tag D */
-	/* If the BODY ends with boiler plate text, this text is removed */
+	String i = extract("I", "W", text, true);
+	String t = extract("T", "A", text, true);
+	String a = extract("A", "B", text, true);
+	String b = extract("B", "W", text, true);
+	String w = extract("W", "", text, true);
 
-	String topics = extract("TOPICS", text, true);
-	String title = extract("TITLE", text, true);
-	String dateline = extract("DATELINE", text, true);
-	String body = extract("BODY", text, true);
-	String date = extract("DATE", text, true);
-
-	if (body.endsWith(END_BOILERPLATE_1)
-		|| body.endsWith(END_BOILERPLATE_2))
-	    body = body.substring(0,
-		    body.length() - END_BOILERPLATE_1.length());
 	List<String> document = new LinkedList<String>();
-	document.add(title);
-	document.add(body);
-	document.add(
-		topics.replaceAll("\\<D\\>", " ").replaceAll("\\<\\/D\\>", ""));
-	document.add(dateline);
-	document.add(date);
+	document.add(i);
+	document.add(t);
+	document.add(a);
+	document.add(b);
+	document.add(w);
 	return document;
     }
 
-    private static String extract(String elt, String text, boolean allowEmpty) {
+    private static String extract(String startE,String endE, String text, boolean allowEmpty) {
 
-	/*
-	 * This method find the tags for the field elt in the String text and
-	 * extracts and returns the content
-	 */
-	/*
-	 * If the tag does not exists and the allowEmpty argument is true, the
-	 * method returns the null string, if allowEmpty is false it returns a
-	 * IllegalArgumentException
-	 */
-
-	String startElt = "<" + elt + ">";
-	String endElt = "</" + elt + ">";
+	String startElt = "." + startE;
+	String endElt = "." + endE;
+	String result;
+	
 	int startEltIndex = text.indexOf(startElt);
 	if (startEltIndex < 0) {
 	    if (allowEmpty)
 		return "";
 	    throw new IllegalArgumentException(
-		    "no start, elt=" + elt + " text=" + text);
+		    "no start, elt=" + startE + " text=" + text);
 	}
 	int start = startEltIndex + startElt.length();
 	int end = text.indexOf(endElt, start);
-	if (end < 0)
+	if ((end < 0) && (endE.compareTo(" ")!=0))
 	    throw new IllegalArgumentException(
-		    "no end, elt=" + elt + " text=" + text);
-	return text.substring(start, end);
+		    "no end, elt=" + endE + " text=" + text);
+	
+	if (endE.compareTo("")==0)
+	     result = text.substring(start);
+	else result = text.substring(start, end);
+	
+	return result;
     }
 
 }
