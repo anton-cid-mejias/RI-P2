@@ -3,7 +3,7 @@ package es.udc.fic.mri_searcher;
 import java.util.LinkedList;
 import java.util.List;
 
-public class CranParser {
+public class CranQueryParser {
 	
     public static List<List<String>> parseString(StringBuffer fileContent) {
 
@@ -18,10 +18,9 @@ public class CranParser {
 	    if (!lines[i].startsWith(".I"))
 		continue;
 	    StringBuilder sb = new StringBuilder();
-	    sb.append(lines[i++]);
-	    sb.append("\n");
 	    while (!lines[i].startsWith(".I")) {
-		sb.append(lines[i++]);
+		sb.append(lines[i]);
+		i++;
 		sb.append("\n");
 	    }
 	    documents.add(handleDocument(sb.toString()));
@@ -35,18 +34,12 @@ public class CranParser {
 	 * This method returns the Cran article that is passed as text as a
 	 * list of fields
 	 */
-	
-	String i = extract("I", "T", text, true);
-	String t = extract("T", "A", text, true);
-	String a = extract("A", "B", text, true);
-	String b = extract("B", "W", text, true);
+
+	String i = extract("I", "W", text, true);
 	String w = extract("W", "", text, true);
 
 	List<String> document = new LinkedList<String>();
 	document.add(i);
-	document.add(t);
-	document.add(a);
-	document.add(b);
 	document.add(w);
 	return document;
     }
@@ -66,7 +59,7 @@ public class CranParser {
 	}
 	int start = startEltIndex + startElt.length();
 	int end = text.indexOf(endElt, start);
-	if ((end < 0) && (endE.compareTo("")!=0))
+	if ((end < 0) && (endE.compareTo(" ")!=0))
 	    throw new IllegalArgumentException(
 		    "no end, elt=" + endE + " text=" + text);
 	
