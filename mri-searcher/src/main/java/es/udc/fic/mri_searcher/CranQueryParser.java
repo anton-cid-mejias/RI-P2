@@ -3,7 +3,7 @@ package es.udc.fic.mri_searcher;
 import java.util.LinkedList;
 import java.util.List;
 
-public class CranParser {
+public class CranQueryParser {
 	
     public static List<List<String>> parseString(StringBuffer fileContent) {
 
@@ -36,16 +36,10 @@ public class CranParser {
 	 */
 
 	String i = extract("I", "W", text, true);
-	String t = extract("T", "A", text, true);
-	String a = extract("A", "B", text, true);
-	String b = extract("B", "W", text, true);
 	String w = extract("W", "", text, true);
 
 	List<String> document = new LinkedList<String>();
 	document.add(i);
-	document.add(t);
-	document.add(a);
-	document.add(b);
 	document.add(w);
 	return document;
     }
