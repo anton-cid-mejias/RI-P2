@@ -16,6 +16,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -84,31 +85,30 @@ public class Indexer {
 	    for (List<String> cran : allCran) {
 		Document doc = new Document();
 
-		// Index
-		Field INDEX = new StringField("INDEX", cran.get(0),
+		// I
+		Field I = new StringField("I", cran.get(0),
 			Field.Store.YES);
-		doc.add(INDEX);
+		doc.add(I);
 
-		// Title
-		Field TITLE = new StringField("TITLE", cran.get(1),
+		// T
+		Field T = new TextField("T", cran.get(1),
 			Field.Store.YES);
-		doc.add(TITLE);
+		doc.add(T);
 
-		// Author
-		Field AUTHOR = new StringField("AUTHOR", cran.get(2),
+		// A
+		Field A = new TextField("A", cran.get(2),
 			Field.Store.YES);
-		doc.add(AUTHOR);
+		doc.add(A);
 
 		// B
-		Field B = new StringField("B", cran.get(3), Field.Store.YES);
+		Field B = new TextField("B", cran.get(3), Field.Store.YES);
 		doc.add(B);
 
-		// Words: body of the doc
-		Field WORDS = new StringField("WORDS", cran.get(4),
+		// W
+		Field W = new TextField("W", cran.get(4),
 			Field.Store.YES);
-		doc.add(WORDS);
+		doc.add(W);
 		
-		//System.out.println("adding document : Cran " + cran.get(0) );
 		writer.addDocument(doc);
 
 	    }

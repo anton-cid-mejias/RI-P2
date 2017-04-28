@@ -62,7 +62,7 @@ public class IndexingModelWriter {
 	}
 	String model = in.next();
 	if (model.equals("default")){
-	    return similarity;
+	    //nothing
 	} else if (model.equals("jm")){
 	    similarity = new LMJelinekMercerSimilarity(in.nextFloat());
 	} else if (model.equals("dir")){
@@ -72,17 +72,7 @@ public class IndexingModelWriter {
 	    System.exit(1);
 	}
 	
-	return null;
-    }
-    
-    private static String toString(InputStream stream) throws IOException {
-	ByteArrayOutputStream result = new ByteArrayOutputStream();
-	byte[] buffer = new byte[1024];
-	int length;
-	while ((length = stream.read(buffer)) != -1) {
-	    result.write(buffer, 0, length);
-	}
-	return result.toString("UTF-8");
+	return similarity;
     }
 
 }

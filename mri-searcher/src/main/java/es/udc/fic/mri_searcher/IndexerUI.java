@@ -50,7 +50,7 @@ public class IndexerUI {
 		    indexingModel = true;
 		    modelNumber = Float.valueOf(args[i+2]);
 		    i = i+2;
-		} else if ("dir".equals(args[i])){
+		} else if ("dir".equals(args[i+1])){
 		    indexingModel = false;
 		    modelNumber = Float.valueOf(args[i+2]);
 		    i = i+2;
