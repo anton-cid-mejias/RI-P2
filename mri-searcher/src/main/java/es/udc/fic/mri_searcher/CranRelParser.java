@@ -1,73 +1,37 @@
 package es.udc.fic.mri_searcher;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 public class CranRelParser {
 	
-    public static List<List<String>> parseString(StringBuffer fileContent) {
+    public static List<QueryNumberRelevanceDoc> parseString(StringBuffer fileContent) {
 
 	String text = fileContent.toString();
 	String[] lines = text.split("\n");
+	String[] numbers;
+	QueryNumberRelevanceDoc data;
+	int queryNumber;
 
-	List<List<String>> documents = new LinkedList<List<String>>();
+	List<QueryNumberRelevanceDoc> documents = new LinkedList<>();
+	List<Integer> docs = new ArrayList<>();
 
-	/* The word .I identifies the beginning of each article */
-
-	for (int i = 0; i < lines.length; ++i) {
-	    if (!lines[i].startsWith(".I"))
-		continue;
-	    StringBuilder sb = new StringBuilder();
-	    while (!lines[i].startsWith(".I")) {
-		sb.append(lines[i]);
-		i++;
-		sb.append("\n");
+	numbers = lines[0].split(" ");
+	queryNumber = Integer.parseInt(numbers[0]);
+	docs.add(Integer.parseInt(numbers[1]));
+	for (int i = 1; i < lines.length; ++i) {
+	    numbers = lines[0].split(" ");
+	    if (Integer.parseInt(numbers[0])==queryNumber){
+		docs.add(Integer.parseInt(numbers[1]));
+	    }else{
+		data = new QueryNumberRelevanceDoc(queryNumber,docs);
+		documents.add(data);
+		docs.clear();
+		queryNumber = Integer.parseInt(numbers[0]);
+		docs.add(Integer.parseInt(numbers[1]));
 	    }
-	    documents.add(handleDocument(sb.toString()));
 	}
 	return documents;
     }
-
-    public static List<String> handleDocument(String text) {
-
-	/*
-	 * This method returns the Cran article that is passed as text as a
-	 * list of fields
-	 */
-
-	String i = extract("I", "W", text, true);
-	String w = extract("W", "", text, true);
-
-	List<String> document = new LinkedList<String>();
-	document.add(i);
-	document.add(w);
-	return document;
-    }
-
-    private static String extract(String startE,String endE, String text, boolean allowEmpty) {
-
-	String startElt = "." + startE;
-	String endElt = "." + endE;
-	String result;
-	
-	int startEltIndex = text.indexOf(startElt);
-	if (startEltIndex < 0) {
-	    if (allowEmpty)
-		return "";
-	    throw new IllegalArgumentException(
-		    "no start, elt=" + startE + " text=" + text);
-	}
-	int start = startEltIndex + startElt.length();
-	int end = text.indexOf(endElt, start);
-	if ((end < 0) && (endE.compareTo(" ")!=0))
-	    throw new IllegalArgumentException(
-		    "no end, elt=" + endE + " text=" + text);
-	
-	if (endE.compareTo("")==0)
-	     result = text.substring(start);
-	else result = text.substring(start, end);
-	
-	return result;
-    }
-
 }
