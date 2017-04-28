@@ -108,8 +108,7 @@ public class Indexer {
 			Field.Store.YES);
 		doc.add(WORDS);
 		
-		System.out.println(
-			"adding document : Cran " + cran.get(0) );
+		//System.out.println("adding document : Cran " + cran.get(0) );
 		writer.addDocument(doc);
 
 	    }

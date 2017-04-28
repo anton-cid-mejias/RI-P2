@@ -8,6 +8,8 @@ import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.LMJelinekMercerSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 
+import es.udc.fic.util.IndexingModelWriter;
+
 public class IndexerUI {
 
     public static void main(String[] args) throws IOException {
@@ -81,7 +83,7 @@ public class IndexerUI {
 	}
 	
 	Indexer.run(openmode, index, coll, similarity);
-	//Escribir si fue default,jm o dir y apuntar lambda y mu
+	IndexingModelWriter.writeIndexingModel(indexingModel, modelNumber, index); 
 
     }
 
