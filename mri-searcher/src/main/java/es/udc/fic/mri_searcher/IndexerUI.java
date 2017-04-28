@@ -1,10 +1,16 @@
 package es.udc.fic.mri_searcher;
 
+import java.io.IOException;
+
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.search.similarities.BM25Similarity;
+import org.apache.lucene.search.similarities.LMDirichletSimilarity;
+import org.apache.lucene.search.similarities.LMJelinekMercerSimilarity;
+import org.apache.lucene.search.similarities.Similarity;
 
 public class IndexerUI {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
 	if ((args.length == 0) || (args.length > 0
 		&& ("-h".equals(args[0]) || "-help".equals(args[0])))) {
@@ -15,7 +21,10 @@ public class IndexerUI {
 	OpenMode openmode = OpenMode.CREATE_OR_APPEND;
 	String index = null;
 	String coll = null;
-	// el indexingmodel de momento no sé qué hacer con él
+	//Null = default, true for jm lambda, false for dir mu
+	Boolean indexingModel = null;
+	Float modelNumber = null;
+	Similarity similarity = new BM25Similarity();
 
 	for (int i = 0; i < args.length; i++) {
 	    if ("-openmode".equals(args[i])) {
@@ -34,6 +43,16 @@ public class IndexerUI {
 	    } else if ("-coll".equals(args[i])) {
 		coll = args[i + 1];
 		i++;
+	    } else if ("-indexingmodel".equals(args[i])) {
+		if ("jm".equals(args[i+1])) {
+		    indexingModel = true;
+		    modelNumber = Float.valueOf(args[i+2]);
+		    i = i+2;
+		} else if ("dir".equals(args[i])){
+		    indexingModel = false;
+		    modelNumber = Float.valueOf(args[i+2]);
+		    i = i+2;
+		}
 	    }
 	}
 	
@@ -49,9 +68,18 @@ public class IndexerUI {
 		openmode = OpenMode.APPEND;
 	    }
 	}
-
 	
-	//Aquí el if gigante para llamar al indexer
+	//Cambiar entre default, jm lambda, dir mu
+	if (indexingModel != null){ //default
+	    if (indexingModel){ //lambda
+		similarity = new LMJelinekMercerSimilarity(modelNumber);
+	    } else { //mu
+		similarity = new LMDirichletSimilarity(modelNumber);
+	    }
+	}
+	
+	Indexer.run(openmode, index, coll, similarity);
+	//Escribir si fue default,jm o dir y apuntar lambda y mu
 
     }
 
