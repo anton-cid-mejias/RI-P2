@@ -83,7 +83,7 @@ public class IndexerUI {
 	}
 	
 	Indexer.run(openmode, index, coll, similarity);
-	IndexingModelWriter.writeIndexingModel(indexingModel, modelNumber, index); 
+	IndexingModelWriter.writeIndexingModel(indexingModel, modelNumber, index, coll); 
 
     }
 
