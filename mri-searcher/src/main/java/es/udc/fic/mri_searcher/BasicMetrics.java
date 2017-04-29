@@ -5,26 +5,7 @@ import java.util.List;
 
 public class BasicMetrics {
 
-    public static float[] Precision(RelevantDocumentsAndHits rel) {
-	
-	float[] p = new float[2];
-	p[0] = rel.getHits10()/10;
-	p[1] = rel.getHits20()/20;
-	
-	return p;
-	
-    }
-
-    public static float[] Recall(RelevantDocumentsAndHits rel) {
-
-	float[] recall = new float[2];
-	recall[0] = rel.getHits10()/rel.getTotalRelevants();
-	recall[1] = rel.getHits20()/rel.getTotalRelevants();
-	
-	return recall;
-    }
-
-    public static RelevantDocumentsAndHits RelevanceHits(int queryNumber,
+    public static RelevantDocumentsAndMetrics RelevanceHits(int queryNumber,
 	    List<Integer> queryDocs, List<QueryNumberRelevanceDoc> cranRel) {
 	
 	List<Integer> relevanceDocs = null;
@@ -56,6 +37,14 @@ public class BasicMetrics {
 	    }
 	}
 	
-	return new RelevantDocumentsAndHits(hits10,hits20,relevanceDocsHits,relevanceDocs.size());
+	float[] p = new float[2];
+	p[0] = hits10/10;
+	p[1] = hits20/20;
+	
+	float[] recall = new float[2];
+	recall[0] = hits10/relevanceDocs.size();
+	recall[1] = hits20/relevanceDocs.size();
+	
+	return new RelevantDocumentsAndMetrics(hits10,hits20,relevanceDocsHits,relevanceDocs.size(),p,recall,0);
     }
 }
