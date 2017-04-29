@@ -71,26 +71,36 @@ public class Searcher {
 	Query query = null;
 	TopDocs topDocs = null;
 	Document doc = null;
-	int hits = 0;
 	List<ScoreDoc> scoreDocs = null;
 	List<Integer> queryDocs = null;
-	RelevantDocumentsAndHits relDocsandHits = null;
+	RelevantDocumentsAndMetrics relDocsandMetrics = null;
 	List<Integer> relevantDocs = null;
 	int j = 0;
+	
+	//Metrics
+	float[] precision = null;
+	float[] recall = null;
+	float fullPrecision10 = 0;
+	float fullPrecision20 = 0;
+	float fullRecall10 = 0;
+	float fullRecall20 = 0;
+	float fullAveragePrecision= 0;
+	int realNumberOfQueries = 0;
+	
 	for (int i = int1; i <= int2; i++) {
 	    if (i == actualQueryIndex) {
+		realNumberOfQueries++;
 		query = parser.parse(actualQuery.get(1));
 		topDocs = searcher.search(query, top);
-		hits = topDocs.totalHits;
 		scoreDocs = Arrays.asList(topDocs.scoreDocs);
 
 		queryDocs = new ArrayList<Integer>();
 		for (ScoreDoc scoreDoc : scoreDocs){
 		    queryDocs.add(scoreDoc.doc);
 		}
-		relDocsandHits =BasicMetrics.RelevanceHits(actualQueryIndex,
+		relDocsandMetrics =BasicMetrics.RelevanceHits(actualQueryIndex,
 			queryDocs, queriesRelevance);
-		relevantDocs =relDocsandHits.getRelevantDocs();
+		relevantDocs =relDocsandMetrics.getRelevantDocs();
 
 		//Printing
 		System.out.println("Query: " + query.toString());
@@ -110,16 +120,32 @@ public class Searcher {
 			System.out.println("no");
 		    }
 		}
-		//métricas llamando a lo de Antón
+		//Printing metrics
+		precision = relDocsandMetrics.getPrecision();
+		recall = relDocsandMetrics.getRecall();
+		System.out.println("P@10 = " + precision[0] );
+		System.out.println("P@20 = " + precision[1]);
+		System.out.println("Recall@10 = " + recall[0]);
+		System.out.println("Recall@20 = " + recall[1]);
 		System.out.println();
-		
+		fullPrecision10 += precision[0];
+		fullPrecision20 += precision[1];
+		fullRecall10 += recall[0];
+		fullRecall20 += recall[1];
+		fullAveragePrecision += relDocsandMetrics.getAveragePrecision();
 
 		actualQuery = itr.next();
 		actualQueryIndex = Integer.parseInt(actualQuery.get(0));
 	    }
 	}
 	
-	//Finalmente se mostrarán las métricas promediadas
+	if (realNumberOfQueries !=0){
+	    System.out.println("Mean p@10: " + (fullPrecision10/realNumberOfQueries));
+	    System.out.println("Mean p@20: " + (fullPrecision20/realNumberOfQueries));
+	    System.out.println("Mean recall@10: " + (fullRecall10/realNumberOfQueries));
+	    System.out.println("Mean recall@10: " + (fullRecall20/realNumberOfQueries));
+	    System.out.println("MAP: " + (fullAveragePrecision /realNumberOfQueries));
+	}
 
     }
 
