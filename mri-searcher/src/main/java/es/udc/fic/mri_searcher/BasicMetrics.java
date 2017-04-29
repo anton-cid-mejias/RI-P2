@@ -14,6 +14,8 @@ public class BasicMetrics {
 	int hits10 = 0;
 	int hits20 = 0;
 	int doc;
+	float precisionSum = 0;
+	int numberRelevanceDocs = 0;
 
 	for (QueryNumberRelevanceDoc d : cranRel) {
 	    if (d.getQueryNumber() == queryNumber) {
@@ -21,12 +23,15 @@ public class BasicMetrics {
 		break;
 	    }
 	}
+	
+	numberRelevanceDocs = relevanceDocs.size();
 
 	for (int i = 0; i < queryDocs.size(); i++) {
 	    doc = queryDocs.get(i);
 	    if (relevanceDocs.contains(queryDocs.get(i))) {
 		relevanceDocsHits.add(doc);
 		hits++;
+		precisionSum += hits/i;
 	    }
 	    
 	    if (i==9){
@@ -42,9 +47,11 @@ public class BasicMetrics {
 	p[1] = hits20/20;
 	
 	float[] recall = new float[2];
-	recall[0] = hits10/relevanceDocs.size();
-	recall[1] = hits20/relevanceDocs.size();
+	recall[0] = hits10/numberRelevanceDocs;
+	recall[1] = hits20/numberRelevanceDocs;
 	
-	return new RelevantDocumentsAndMetrics(hits10,hits20,relevanceDocsHits,relevanceDocs.size(),p,recall,0);
+	float average_precision = precisionSum/numberRelevanceDocs;
+	
+	return new RelevantDocumentsAndMetrics(hits10,hits20,relevanceDocsHits,numberRelevanceDocs,p,recall,average_precision);
     }
 }

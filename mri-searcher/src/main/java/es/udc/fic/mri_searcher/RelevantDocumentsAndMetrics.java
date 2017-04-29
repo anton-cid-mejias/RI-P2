@@ -8,7 +8,9 @@ public class RelevantDocumentsAndMetrics {
     private final int hits20;
     private final List<Integer> relevantDocs;
     private final int totalRelevants;
+    //precision[0] = P@10;  precision[1] = P@20; 
     private final float[] precision;
+    //recall[0] = Recall@10;  recall[1] = Recall@20; 
     private final float[] recall;
     private final float averagePrecision;
     
