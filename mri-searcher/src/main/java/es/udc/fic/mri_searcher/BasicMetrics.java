@@ -7,12 +7,15 @@ public class BasicMetrics {
 
     public static void P(RelevantDocumentsAndHits rel) {
 	
-	System.out.println("P@10 = ");
+	System.out.println("P@10 = " + rel.getHits10()/10);
+	System.out.println("P@20 = " + rel.getHits20()/20);
 	
     }
 
-    public static void Recall() {
+    public static void Recall(RelevantDocumentsAndHits rel) {
 
+	System.out.println("Recall@10 = " + rel.getHits10()/rel.getTotalRelevants());
+	System.out.println("Recall@20 = " + rel.getHits20()/rel.getTotalRelevants());
     }
 
     public static RelevantDocumentsAndHits RelevanceHits(int queryNumber,
@@ -47,6 +50,6 @@ public class BasicMetrics {
 	    }
 	}
 	
-	return new RelevantDocumentsAndHits(hits10,hits20,relevanceDocsHits);
+	return new RelevantDocumentsAndHits(hits10,hits20,relevanceDocsHits,relevanceDocs.size());
     }
 }

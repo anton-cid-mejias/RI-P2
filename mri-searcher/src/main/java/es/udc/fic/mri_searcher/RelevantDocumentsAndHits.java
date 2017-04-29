@@ -6,12 +6,14 @@ public class RelevantDocumentsAndHits {
     private final int hits10;
     private final int hits20;
     private final List<Integer> relevantDocs;
+    private final int totalRelevants;
     
     public RelevantDocumentsAndHits(int hits10, int hits20,
-	    List<Integer> relevantDocs) {
+	    List<Integer> relevantDocs,int totalRelevants) {
 	this.hits10 = hits10;
 	this.hits20 = hits20;
 	this.relevantDocs = relevantDocs;
+	this.totalRelevants = totalRelevants;
     }
 
     public int getHits10() {
@@ -26,5 +28,7 @@ public class RelevantDocumentsAndHits {
         return relevantDocs;
     }
     
-    
+    public int getTotalRelevants() {
+        return totalRelevants;
+    }
 }
