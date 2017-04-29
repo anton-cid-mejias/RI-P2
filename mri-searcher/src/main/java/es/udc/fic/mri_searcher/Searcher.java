@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -70,28 +71,37 @@ public class Searcher {
 	TopDocs topDocs = null;
 	int hits = 0;
 	List<ScoreDoc> scoreDocs = null;
-	for (int i = int1; i < int2; i++) {
+	List<Integer> queryDocs = null;
+	for (int i = int1; i <= int2; i++) {
 	    if (i == actualQueryIndex) {
 		query = parser.parse(actualQuery.get(1));
 		topDocs = searcher.search(query, top);
 		hits = topDocs.totalHits;
 		scoreDocs = Arrays.asList(topDocs.scoreDocs);
+
+		queryDocs = new ArrayList<Integer>();
+		for (ScoreDoc scoreDoc : scoreDocs){
+		    queryDocs.add(scoreDoc.doc);
+		}
+		BasicMetrics.RelevanceHits(actualQueryIndex,
+			queryDocs, queriesRelevance);
 		
-		
-		//Llamar a función de Antón
 		/*Imprimir con una función:
 		 * query, el top n de documentos, y para cada documento se
 		 * visualizarán todos los campos indicados en el argumento
 		 * fields (opción fieldsvisual), el score del documento y una
 		 * marca que diga si es relevante según los juicios de
 		 * relevancia, y las métricas individuales para cada query.
-		 * Finalmente se mostrarán las métricas promediadas
 		 */
+		
+		//le paso query.toString, reader, scoreDocs, fieldsVisual, y las métricas
 
 		actualQuery = itr.next();
 		actualQueryIndex = Integer.parseInt(actualQuery.get(0));
 	    }
 	}
+	
+	//Finalmente se mostrarán las métricas promediadas
 
     }
 

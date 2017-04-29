@@ -22,8 +22,8 @@ public class SearcherUI {
 	int int1 = 0;
 	int int2 = 0;
 	int counter = 0;
-	String[] fieldsproc = new String[2];
-	String[] fieldsvisual = new String[5];
+	String[] fieldsproc = null;
+	String[] fieldsvisual = null;
 
 	// indexingModel : Null = default, true = jm lambda, false = dir mu
 	Boolean indexingModel = null;
@@ -81,6 +81,7 @@ public class SearcherUI {
 		    i++;
 		}
 	    } else if ("-fieldsproc".equals(args[i])) {
+		fieldsproc = new String[2];
 		while (!args[i + 1].contains("-")) {
 		    if (args[i + 1].equals("T") || args[i + 1].equals("W")) {
 			fieldsproc[counter] = args[i + 1];
@@ -94,6 +95,7 @@ public class SearcherUI {
 		i++;
 		counter = 0;
 	    } else if ("-fieldsvisual".equals(args[i])) {
+		fieldsvisual = new String[5];
 		while (!args[i + 1].contains("-")) {
 		    if (args[i + 1].equals("T") || args[i + 1].equals("I")
 			    || args[i + 1].equals("W")
@@ -111,12 +113,16 @@ public class SearcherUI {
 		counter = 0;
 	    }
 	}
-	
-	//OJOOOOOOOOOOOOOOOOOOOOO FALTA HACER ALGO QUE PETE SI NO METEN TODOS LOS ARGUMENTOS
-	
-	
-	SimilarityAndColl simColl = IndexingModelWriter.readIndexingModel(indexin, indexingModel);
-	Searcher.run(indexin, simColl, int1, int2, cut, top, fieldsproc, fieldsvisual);
+
+	if ((indexin == null) || (cut > 0) || (top > 0) || (fieldsproc == null)
+		|| (fieldsvisual == null)) {
+	    print_usage_and_exit();
+	}
+
+	SimilarityAndColl simColl = IndexingModelWriter
+		.readIndexingModel(indexin, indexingModel);
+	Searcher.run(indexin, simColl, int1, int2, cut, top, fieldsproc,
+		fieldsvisual);
     }
 
     private static void print_usage_and_exit() {
