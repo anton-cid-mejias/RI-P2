@@ -88,19 +88,14 @@ public class Searcher {
 		}
 		relDocsandHits =BasicMetrics.RelevanceHits(actualQueryIndex,
 			queryDocs, queriesRelevance);
-		
-		/*Imprimir con una función:
-		 * query, el top n de documentos, y para cada documento se
-		 * visualizarán todos los campos indicados en el argumento
-		 * fields (opción fieldsvisual), el score del documento y una
-		 * marca que diga si es relevante según los juicios de
-		 * relevancia, y las métricas individuales para cada query.
-		 */
-		
+
+		//Printing
 		System.out.println("Query: " + query.toString());
+		int j = 0;
 		for (ScoreDoc scoreDoc : scoreDocs){
+		    j++;
 		    doc = reader.document(scoreDoc.doc);
-		    System.out.println("Document: ");
+		    System.out.println("Document number " + j + ": ");
 		    for (String field: fieldsVisualList){
 			System.out.println(field + ": "+ doc.get(field));
 		    }
