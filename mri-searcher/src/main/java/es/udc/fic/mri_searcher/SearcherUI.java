@@ -2,8 +2,13 @@ package es.udc.fic.mri_searcher;
 
 import java.io.IOException;
 
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.similarities.Similarity;
+
+import es.udc.fic.util.IndexingModelWriter;
+
 public class SearcherUI {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParseException {
 
 	if ((args.length == 0) || (args.length > 0
 		&& ("-h".equals(args[0]) || "-help".equals(args[0])))) {
@@ -11,8 +16,8 @@ public class SearcherUI {
 	}
 
 	String indexin = null;
-	int cut;
-	int top;
+	int cut = -1;
+	int top = -1;
 	String[] ints;
 	int int1 = 0;
 	int int2 = 0;
@@ -106,6 +111,12 @@ public class SearcherUI {
 		counter = 0;
 	    }
 	}
+	
+	//OJOOOOOOOOOOOOOOOOOOOOO FALTA HACER ALGO QUE PETE SI NO METEN TODOS LOS ARGUMENTOS
+	
+	
+	SimilarityAndColl simColl = IndexingModelWriter.readIndexingModel(indexin, indexingModel);
+	Searcher.run(indexin, simColl, int1, int2, cut, top, fieldsproc, fieldsvisual);
     }
 
     private static void print_usage_and_exit() {

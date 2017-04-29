@@ -13,20 +13,22 @@ import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.LMJelinekMercerSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 
+import es.udc.fic.mri_searcher.SimilarityAndColl;
+
 public class IndexingModelWriter {
 
-    public static void writeIndexingModel(Boolean indexingModel, Float modelNumber, String index) {
+    public static void writeIndexingModel(Boolean indexingModel, Float modelNumber, String index, String coll) {
 	if (indexingModel == null) {
-	    write("default", null, index);
+	    write("default", null, index, coll);
 	} else if (indexingModel) {
-	    write("jm", modelNumber, index);
+	    write("jm", modelNumber, index, coll);
 	} else {
-	    write("dir", modelNumber, index);
+	    write("dir", modelNumber, index, coll);
 	}
 
     }
 
-    public static void write(String indexingModel, Float modelNumber, String index) {
+    public static void write(String indexingModel, Float modelNumber, String index, String coll) {
 	PrintWriter writer = null;
 	try {
 	    Path path = Paths.get(index, "IndexingModel.txt");
@@ -36,14 +38,16 @@ public class IndexingModelWriter {
 	} catch (UnsupportedEncodingException e) {
 	    e.printStackTrace();
 	}
+	writer.println(coll);
 	writer.println(indexingModel);
 	if (modelNumber != null) {
 	    writer.println(modelNumber);
 	}
+	
 	writer.close();
     }
     
-    public static Similarity readIndexingModel(String index, String indexingModelSearch) {
+    public static SimilarityAndColl readIndexingModel(String index, Boolean indexingModelSearch) {
 	Similarity similarity = new BM25Similarity();
 	
 	Path indexingModelFile = Paths.get(index, "IndexingModel.txt");
@@ -54,12 +58,13 @@ public class IndexingModelWriter {
 	    System.out.println("The indexing model file was not found");
 	    e.printStackTrace();
 	}
+	String coll = in.next();
 	String model = in.next();
 	if (model.equals("default")){
 	    //nothing
 	} else if (model.equals("jm")){
 	    //Can't use Dirichlet if JelinekMercer was used to index
-	    if ("dir".equals(indexingModelSearch)){
+	    if (!indexingModelSearch){
 		System.out.println("Can't use Dirichlet for searching as"
 			+ " JelinekMercer was used to index");
 		System.exit(1);
@@ -67,7 +72,7 @@ public class IndexingModelWriter {
 	    similarity = new LMJelinekMercerSimilarity(in.nextFloat());
 	} else if (model.equals("dir")){
 	    //Can't use JelinekMercer if Dirichlet was used to index
-	    if ("jm".equals(indexingModelSearch)){
+	    if (indexingModelSearch){
 		System.out.println("Can't use JelinekMercer for searching as"
 			+ " Dirichlet was used to index");
 		System.exit(1);
@@ -78,7 +83,7 @@ public class IndexingModelWriter {
 	    System.exit(1);
 	}
 	
-	return similarity;
+	return new SimilarityAndColl(coll, similarity);
     }
 
 }
