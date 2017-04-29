@@ -75,6 +75,8 @@ public class Searcher {
 	List<ScoreDoc> scoreDocs = null;
 	List<Integer> queryDocs = null;
 	RelevantDocumentsAndHits relDocsandHits = null;
+	List<Integer> relevantDocs = null;
+	int j = 0;
 	for (int i = int1; i <= int2; i++) {
 	    if (i == actualQueryIndex) {
 		query = parser.parse(actualQuery.get(1));
@@ -88,10 +90,11 @@ public class Searcher {
 		}
 		relDocsandHits =BasicMetrics.RelevanceHits(actualQueryIndex,
 			queryDocs, queriesRelevance);
+		relevantDocs =relDocsandHits.getRelevantDocs();
 
 		//Printing
 		System.out.println("Query: " + query.toString());
-		int j = 0;
+		j = 0;
 		for (ScoreDoc scoreDoc : scoreDocs){
 		    j++;
 		    doc = reader.document(scoreDoc.doc);
@@ -100,9 +103,14 @@ public class Searcher {
 			System.out.println(field + ": "+ doc.get(field));
 		    }
 		    System.out.println("Score: " + scoreDoc.score);
-		    //marca de relevancia
-		    //métricas llamando a lo de Antón
+		    System.out.print("Relevant: ");
+		    if(relevantDocs.contains(scoreDoc.doc)){
+			System.out.println("yes");
+		    } else {
+			System.out.println("no");
+		    }
 		}
+		//métricas llamando a lo de Antón
 		System.out.println();
 		
 
