@@ -43,13 +43,13 @@ public class IndexingModelWriter {
 	writer.close();
     }
     
-    public static Similarity readIndexingModel(String index) {
+    public static Similarity readIndexingModel(String index, String indexingModelSearch) {
 	Similarity similarity = new BM25Similarity();
 	
-	Path indexingModel = Paths.get(index, "IndexingModel.txt");
+	Path indexingModelFile = Paths.get(index, "IndexingModel.txt");
 	Scanner in = null;
 	try {
-	    in = new Scanner(new FileReader(indexingModel.toString()));
+	    in = new Scanner(new FileReader(indexingModelFile.toString()));
 	} catch (FileNotFoundException e) {
 	    System.out.println("The indexing model file was not found");
 	    e.printStackTrace();
@@ -58,8 +58,20 @@ public class IndexingModelWriter {
 	if (model.equals("default")){
 	    //nothing
 	} else if (model.equals("jm")){
+	    //Can't use Dirichlet if JelinekMercer was used to index
+	    if ("dir".equals(indexingModelSearch)){
+		System.out.println("Can't use Dirichlet for searching as"
+			+ " JelinekMercer was used to index");
+		System.exit(1);
+	    }
 	    similarity = new LMJelinekMercerSimilarity(in.nextFloat());
 	} else if (model.equals("dir")){
+	    //Can't use JelinekMercer if Dirichlet was used to index
+	    if ("jm".equals(indexingModelSearch)){
+		System.out.println("Can't use JelinekMercer for searching as"
+			+ " Dirichlet was used to index");
+		System.exit(1);
+	    }
 	    similarity = new LMDirichletSimilarity(in.nextFloat());
 	} else {
 	    System.out.println("The indexing model file was wrong");
