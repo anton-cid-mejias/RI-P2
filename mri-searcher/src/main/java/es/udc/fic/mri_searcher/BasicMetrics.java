@@ -5,31 +5,17 @@ import java.util.List;
 
 public class BasicMetrics {
 
-    public void P(int queryNumber, List<Integer> queryDocs,
-	    List<QueryNumberRelevanceDoc> cranRel) {
-
-	List<Integer> relevanceDocs = null;
-	int hits = 0;
-
-	for (QueryNumberRelevanceDoc d : cranRel) {
-	    if (d.getQueryNumber() == queryNumber) {
-		relevanceDocs = d.getRelevanceDoc();
-		break;
-	    }
-	}
-
-	for (int i = 0; i < queryDocs.size(); i++) {
-	    if (relevanceDocs.contains(queryDocs.get(i))) {
-		hits++;
-	    }
-	}
+    public static void P(RelevantDocumentsAndHits rel) {
+	
+	System.out.println("P@10 = ");
+	
     }
 
-    public void Recall() {
+    public static void Recall() {
 
     }
 
-    public RelevantDocumentsAndHits RelevanceHits(int queryNumber,
+    public static RelevantDocumentsAndHits RelevanceHits(int queryNumber,
 	    List<Integer> queryDocs, List<QueryNumberRelevanceDoc> cranRel) {
 	
 	List<Integer> relevanceDocs = null;
