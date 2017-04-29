@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -19,7 +20,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
@@ -30,6 +30,7 @@ public class Searcher {
 	    int int2, int cut, int top, String[] fieldsProcs,
 	    String[] fieldsVisual) throws IOException, ParseException {
 
+	List<String> fieldsVisualList = Arrays.asList(fieldsVisual);
 	Directory indir = FSDirectory.open(Paths.get(index));
 	DirectoryReader reader = DirectoryReader.open(indir);
 	IndexSearcher searcher = new IndexSearcher(reader);
@@ -69,9 +70,13 @@ public class Searcher {
 	int actualQueryIndex = Integer.parseInt(actualQuery.get(0));
 	Query query = null;
 	TopDocs topDocs = null;
+	Document doc = null;
 	int hits = 0;
 	List<ScoreDoc> scoreDocs = null;
 	List<Integer> queryDocs = null;
+	RelevantDocumentsAndHits relDocsandHits = null;
+	List<Integer> relevantDocs = null;
+	int j = 0;
 	for (int i = int1; i <= int2; i++) {
 	    if (i == actualQueryIndex) {
 		query = parser.parse(actualQuery.get(1));
@@ -83,18 +88,31 @@ public class Searcher {
 		for (ScoreDoc scoreDoc : scoreDocs){
 		    queryDocs.add(scoreDoc.doc);
 		}
-		BasicMetrics.RelevanceHits(actualQueryIndex,
+		relDocsandHits =BasicMetrics.RelevanceHits(actualQueryIndex,
 			queryDocs, queriesRelevance);
+		relevantDocs =relDocsandHits.getRelevantDocs();
+
+		//Printing
+		System.out.println("Query: " + query.toString());
+		j = 0;
+		for (ScoreDoc scoreDoc : scoreDocs){
+		    j++;
+		    doc = reader.document(scoreDoc.doc);
+		    System.out.println("Document number " + j + ": ");
+		    for (String field: fieldsVisualList){
+			System.out.println(field + ": "+ doc.get(field));
+		    }
+		    System.out.println("Score: " + scoreDoc.score);
+		    System.out.print("Relevant: ");
+		    if(relevantDocs.contains(scoreDoc.doc)){
+			System.out.println("yes");
+		    } else {
+			System.out.println("no");
+		    }
+		}
+		//métricas llamando a lo de Antón
+		System.out.println();
 		
-		/*Imprimir con una función:
-		 * query, el top n de documentos, y para cada documento se
-		 * visualizarán todos los campos indicados en el argumento
-		 * fields (opción fieldsvisual), el score del documento y una
-		 * marca que diga si es relevante según los juicios de
-		 * relevancia, y las métricas individuales para cada query.
-		 */
-		
-		//le paso query.toString, reader, scoreDocs, fieldsVisual, y las métricas
 
 		actualQuery = itr.next();
 		actualQueryIndex = Integer.parseInt(actualQuery.get(0));
