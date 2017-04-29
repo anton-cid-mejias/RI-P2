@@ -1,7 +1,12 @@
 package es.udc.fic.mri_searcher;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -16,19 +21,52 @@ public class Searcher {
 
     //
     public void run(String index, Similarity similarity,
-	    String queries, int int1, int int2, String cut, String top,
-	    List<String> fieldsProcs, List<String> fieldsVisual) throws IOException {
+	    int int1, int int2, String cut, String top,
+	    String[] fieldsProcs, String[] fieldsVisual) throws IOException {
 	
 	Directory indir = FSDirectory.open(Paths.get(index));
 	DirectoryReader reader = DirectoryReader.open(indir);
 	IndexSearcher searcher = new IndexSearcher(reader);
 	searcher.setSimilarity(similarity);
 	
+	Path path = Paths.get(index, "IndexingModel.txt");
+	InputStream stream = Files.newInputStream(path);
+	List<List<String>> queries = CranQueryParser.parseString(new StringBuffer(toString(stream)));
+	
+	int lastQuery = Integer.parseInt(queries.get(queries.size() -1).get(0));
+	if (int1 == 0){
+	    int1 = 1;
+	    int2 = lastQuery;
+	} else if (int2 == 0){
+	    int2 = int1;
+	} else {
+	    if (int1 > lastQuery || int2 > lastQuery){
+		System.out.println("Last query number is " + lastQuery + " use a different range of queries");
+		System.exit(1);
+	    }
+	}
 	
 	
 	//Parses T or W or both
 	MultiFieldQueryParser parser = new MultiFieldQueryParser(
-		    (String[]) fieldsProcs.toArray(), new StandardAnalyzer());
+		    fieldsProcs, new StandardAnalyzer());
 	
+	Iterator itr = queries.iterator();
+	List<String> actualQuery = (List<String>) itr.next();
+	int actualQueryIndex = Integer.parseInt(actualQuery.get(0));
+	for (int i = int1; i < int2; i++) {
+	    
+	}
+	
+    }
+
+    private static String toString(InputStream stream) throws IOException {
+	ByteArrayOutputStream result = new ByteArrayOutputStream();
+	byte[] buffer = new byte[1024];
+	int length;
+	while ((length = stream.read(buffer)) != -1) {
+	    result.write(buffer, 0, length);
+	}
+	return result.toString("UTF-8");
     }
 }
