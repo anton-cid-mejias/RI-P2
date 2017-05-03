@@ -23,6 +23,17 @@ public class SearcherUI {
 	int counter = 0;
 	String[] fieldsproc = null;
 	String[] fieldsvisual = null;
+	
+	//rf
+	int rf1Tq = -1;
+	int rf1Td = -1;
+	int rfNdr = -1;
+	//prf
+	int nd = -1;
+	int nw = -1;
+	
+	boolean explain = false;
+	
 
 	// indexingModel : Null = default, true = jm lambda, false = dir mu
 	Boolean indexingModel = null;
@@ -108,9 +119,29 @@ public class SearcherUI {
 		    }
 		}
 		counter = 0;
+	    } else if ("-rf1".equals(args[i])){
+		rf1Tq = Integer.parseInt(args[i+1]);
+		rf1Td = Integer.parseInt(args[i+2]);
+		rfNdr = Integer.parseInt(args[i+3]);
+		i = i+3;
+		
+	    } else if ("-rf2".equals(args[i])){
+		rfNdr = Integer.parseInt(args[i+1]);
+		i++;
+	    } else if ("-prfjm".equals(args[i])){
+		nd =  Integer.parseInt(args[i+1]);
+		nw =  Integer.parseInt(args[i+2]);
+		i = i+2;
+	    } else if ("-prfdir".equals(args[i])){
+		nd =  Integer.parseInt(args[i+1]);
+		nw =  Integer.parseInt(args[i+2]);
+		i = i+2;
+	    } else if ("-explain".equals(args[i])){
+		explain = true;
 	    }
 	}
 
+	//OJO, hay que completar esto para las nuevas opciones
 	if ((indexin == null) || (cut < 0) || (top < 0) || (fieldsproc == null)
 		|| (fieldsvisual == null)) {
 	    print_usage_and_exit();
@@ -118,6 +149,7 @@ public class SearcherUI {
 
 	SimilarityAndColl simColl = IndexingModelWriter
 		.readIndexingModel(indexin, indexingModel);
+	//OJO, esto habrá que cambiar en varios dependiendo de lo que entre
 	Searcher.run(indexin, simColl, int1, int2, cut, top, fieldsproc,
 		fieldsvisual);
     }
@@ -125,7 +157,8 @@ public class SearcherUI {
     private static void print_usage_and_exit() {
 	String usage = "Usage: Searching options [-search default|jm|dir] [-indexin pathname] [-cut n] "
 		+ "[-top n] [-queries all|int1|int1-int2] [fieldsproc lista-campos]"
-		+ " [fieldsvisual lista-campos] \n";
+		+ " [fieldsvisual lista-campos] [-rf1 tq td ndr] [-rf2 ndr] "
+		+ "[-prfjm nd nw] [-prfdir nd nw] [-explain]\n";
 	System.out.println(usage);
 	System.exit(0);
     }
