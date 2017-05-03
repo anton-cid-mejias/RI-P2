@@ -50,6 +50,41 @@ public class Processor {
 	}
 	printIdfTerms(listTerms, n, field, asc);
     }
+    
+    public static List<TermIdf> GetIdfTerms(String indexFile, String field, int n,
+	    boolean asc) throws IOException {
+
+	Directory dir = null;
+	DirectoryReader indexReader = null;
+
+	dir = FSDirectory.open(Paths.get(indexFile));
+	indexReader = DirectoryReader.open(dir);
+	int numberDocuments = indexReader.numDocs();
+	List<TermIdf> listTerms = new ArrayList<>();
+	Map<String, Integer> termMap = new HashMap<>();
+
+	termMap = getTermFrequencies(indexReader, field);
+	indexReader.close();
+
+	@SuppressWarnings("rawtypes")
+	Iterator it = termMap.entrySet().iterator();
+	while (it.hasNext()) {
+	    @SuppressWarnings("rawtypes")
+	    Map.Entry pair = (Map.Entry) it.next();
+	    final double idf = Math
+		    .log((float) numberDocuments / ((int) pair.getValue()));
+	    listTerms.add(new TermIdf((String) pair.getKey(), idf));
+	}
+	
+	Collections.sort(listTerms, new Comparator<TermIdf>() {
+		@Override
+		public int compare(TermIdf a, TermIdf b) {
+		    return b.compareTo(a);
+		}
+	    });
+	
+	return listTerms;
+    }
 
     public static void TfIdfTerms(String indexFile, String field, int n,
 	    boolean asc) throws IOException {
