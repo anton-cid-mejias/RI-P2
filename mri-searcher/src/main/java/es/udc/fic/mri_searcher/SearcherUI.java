@@ -23,20 +23,25 @@ public class SearcherUI {
 	int counter = 0;
 	String[] fieldsproc = null;
 	String[] fieldsvisual = null;
-	
-	//rf
-	int rf1Tq = -1;
-	int rf1Td = -1;
-	int rfNdr = -1;
-	//prf
-	int nd = -1;
-	int nw = -1;
-	
+
+	// rf
+	int tq = 0;
+	int td = 0;
+	int ndr = 0;
+	// prf
+	int nd = 0;
+	int nw = 0;
+
+	boolean rf1IsUsed = false;
+	boolean rf2IsUsed = false;
+	boolean prfjmIsUsed = false;
+	boolean prfdirIsUsed = false;
+
 	boolean explain = false;
-	
 
 	// indexingModel : Null = default, true = jm lambda, false = dir mu
 	Boolean indexingModel = null;
+	boolean indexingModelIsUsed = false;
 
 	for (int i = 0; i < args.length; i++) {
 	    if ("-indexin".equals(args[i])) {
@@ -49,6 +54,7 @@ public class SearcherUI {
 		top = Integer.parseInt(args[i + 1]);
 		i++;
 	    } else if ("-search".equals(args[i])) {
+		indexingModelIsUsed = true;
 		if ("jm".equals(args[i + 1])) {
 		    indexingModel = true;
 		    i++;
@@ -92,7 +98,7 @@ public class SearcherUI {
 		}
 	    } else if ("-fieldsproc".equals(args[i])) {
 		fieldsproc = new String[2];
-		while ( (i+1 < args.length) && (!args[i + 1].contains("-"))) {
+		while ((i + 1 < args.length) && (!args[i + 1].contains("-"))) {
 		    if (args[i + 1].equals("T") || args[i + 1].equals("W")) {
 			fieldsproc[counter] = args[i + 1];
 			i++;
@@ -105,7 +111,7 @@ public class SearcherUI {
 		counter = 0;
 	    } else if ("-fieldsvisual".equals(args[i])) {
 		fieldsvisual = new String[5];
-		while ( (i+1 < args.length) && (!args[i + 1].contains("-"))) {
+		while ((i + 1 < args.length) && (!args[i + 1].contains("-"))) {
 		    if (args[i + 1].equals("T") || args[i + 1].equals("I")
 			    || args[i + 1].equals("W")
 			    || args[i + 1].equals("B")
@@ -119,39 +125,89 @@ public class SearcherUI {
 		    }
 		}
 		counter = 0;
-	    } else if ("-rf1".equals(args[i])){
-		rf1Tq = Integer.parseInt(args[i+1]);
-		rf1Td = Integer.parseInt(args[i+2]);
-		rfNdr = Integer.parseInt(args[i+3]);
-		i = i+3;
-		
-	    } else if ("-rf2".equals(args[i])){
-		rfNdr = Integer.parseInt(args[i+1]);
+	    } else if ("-rf1".equals(args[i])) {
+		rf1IsUsed = true;
+		tq = Integer.parseInt(args[i + 1]);
+		td = Integer.parseInt(args[i + 2]);
+		ndr = Integer.parseInt(args[i + 3]);
+		i = i + 3;
+
+	    } else if ("-rf2".equals(args[i])) {
+		rf2IsUsed = true;
+		ndr = Integer.parseInt(args[i + 1]);
 		i++;
-	    } else if ("-prfjm".equals(args[i])){
-		nd =  Integer.parseInt(args[i+1]);
-		nw =  Integer.parseInt(args[i+2]);
-		i = i+2;
-	    } else if ("-prfdir".equals(args[i])){
-		nd =  Integer.parseInt(args[i+1]);
-		nw =  Integer.parseInt(args[i+2]);
-		i = i+2;
-	    } else if ("-explain".equals(args[i])){
+	    } else if ("-prfjm".equals(args[i])) {
+		prfjmIsUsed = true;
+		nd = Integer.parseInt(args[i + 1]);
+		nw = Integer.parseInt(args[i + 2]);
+		i = i + 2;
+	    } else if ("-prfdir".equals(args[i])) {
+		prfdirIsUsed = true;
+		nd = Integer.parseInt(args[i + 1]);
+		nw = Integer.parseInt(args[i + 2]);
+		i = i + 2;
+	    } else if ("-explain".equals(args[i])) {
 		explain = true;
 	    }
 	}
 
-	//OJO, hay que completar esto para las nuevas opciones
+	// OJO, hay que completar esto para las nuevas opciones
 	if ((indexin == null) || (cut < 0) || (top < 0) || (fieldsproc == null)
 		|| (fieldsvisual == null)) {
 	    print_usage_and_exit();
 	}
+	if ((indexingModelIsUsed && prfjmIsUsed)
+		|| (indexingModelIsUsed && prfdirIsUsed)
+		|| (prfdirIsUsed && prfjmIsUsed)) {
+	    System.out.println("Options -search, -prfjm and -prfdir can't be"
+		    + " used at the same time");
+	    print_usage_and_exit();
+	}
+
+	if ((rf1IsUsed && rf2IsUsed) || (rf1IsUsed && prfjmIsUsed)
+		|| (rf1IsUsed && prfdirIsUsed) || (rf2IsUsed && prfjmIsUsed)
+		|| (rf2IsUsed && prfdirIsUsed)) {
+	    System.out.println("Options -rf1, -rf2, -prfjm and -prfdir can't be"
+		    + " used at the same time");
+	    print_usage_and_exit();
+	}
+	
+	if(rf1IsUsed){
+	    if((tq < 0) || (td < 0) || (ndr <0)){
+		System.out.println("Options for -rf1 must be greater than zero");
+		    print_usage_and_exit();
+	    }
+	}
+	if(rf2IsUsed){
+	    if(ndr <0){
+		System.out.println("Options for -rf2 must be greater than zero");
+		    print_usage_and_exit();
+	    }
+	}
+	if(prfjmIsUsed){
+	    if((nd < 0) || (nw < 0)){
+		System.out.println("Options for -prfjm must be greater than zero");
+		    print_usage_and_exit();
+	    }
+	}
+	if(prfdirIsUsed){
+	    if((nd < 0) || (nw < 0)){
+		System.out.println("Options for -prfdir must be greater than zero");
+		    print_usage_and_exit();
+	    }
+	}
+
+	if (prfjmIsUsed) {
+	    indexingModel = true;
+	}
+	if (prfdirIsUsed) {
+	    indexingModel = false;
+	}
 
 	SimilarityAndColl simColl = IndexingModelWriter
 		.readIndexingModel(indexin, indexingModel);
-	//OJO, esto habrá que cambiar en varios dependiendo de lo que entre
 	Searcher.run(indexin, simColl, int1, int2, cut, top, fieldsproc,
-		fieldsvisual);
+		fieldsvisual, tq, td, ndr, nd, nw, explain);
     }
 
     private static void print_usage_and_exit() {

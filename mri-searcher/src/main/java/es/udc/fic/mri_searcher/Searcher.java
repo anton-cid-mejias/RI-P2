@@ -28,7 +28,8 @@ public class Searcher {
     //
     public static void run(String index, SimilarityAndColl simColl, int int1,
 	    int int2, int cut, int top, String[] fieldsProcs,
-	    String[] fieldsVisual) throws IOException, ParseException {
+	    String[] fieldsVisual, int tq, int td, int ndr, int nd, int nw,
+	    boolean explain) throws IOException, ParseException {
 
 	List<String> fieldsVisualList = Arrays.asList(fieldsVisual);
 	Directory indir = FSDirectory.open(Paths.get(index));
@@ -76,17 +77,17 @@ public class Searcher {
 	RelevantDocumentsAndMetrics relDocsandMetrics = null;
 	List<Integer> relevantDocs = null;
 	int j = 0;
-	
-	//Metrics
+
+	// Metrics
 	float[] precision = null;
 	float[] recall = null;
 	float fullPrecision10 = 0;
 	float fullPrecision20 = 0;
 	float fullRecall10 = 0;
 	float fullRecall20 = 0;
-	float fullAveragePrecision= 0;
+	float fullAveragePrecision = 0;
 	int realNumberOfQueries = 0;
-	
+
 	for (int i = int1; i <= int2; i++) {
 	    if (i == actualQueryIndex) {
 		realNumberOfQueries++;
@@ -95,35 +96,35 @@ public class Searcher {
 		scoreDocs = Arrays.asList(topDocs.scoreDocs);
 
 		queryDocs = new ArrayList<Integer>();
-		for (ScoreDoc scoreDoc : scoreDocs){
+		for (ScoreDoc scoreDoc : scoreDocs) {
 		    queryDocs.add(scoreDoc.doc);
 		}
-		relDocsandMetrics =BasicMetrics.RelevanceHits(actualQueryIndex,
+		relDocsandMetrics = BasicMetrics.RelevanceHits(actualQueryIndex,
 			queryDocs, queriesRelevance);
-		relevantDocs =relDocsandMetrics.getRelevantDocs();
+		relevantDocs = relDocsandMetrics.getRelevantDocs();
 
-		//Printing
+		// Iterating queries
 		System.out.println("Query: " + query.toString());
 		j = 0;
-		for (ScoreDoc scoreDoc : scoreDocs){
+		for (ScoreDoc scoreDoc : scoreDocs) {
 		    j++;
 		    doc = reader.document(scoreDoc.doc);
 		    System.out.println("Document number " + j + ": ");
-		    for (String field: fieldsVisualList){
-			System.out.println(field + ": "+ doc.get(field));
+		    for (String field : fieldsVisualList) {
+			System.out.println(field + ": " + doc.get(field));
 		    }
 		    System.out.println("Score: " + scoreDoc.score);
 		    System.out.print("Relevant: ");
-		    if(relevantDocs.contains(scoreDoc.doc)){
+		    if (relevantDocs.contains(scoreDoc.doc)) {
 			System.out.println("yes");
 		    } else {
 			System.out.println("no");
 		    }
 		}
-		//Printing metrics
+		// Printing metrics
 		precision = relDocsandMetrics.getPrecision();
 		recall = relDocsandMetrics.getRecall();
-		System.out.println("P@10 = " + precision[0] );
+		System.out.println("P@10 = " + precision[0]);
 		System.out.println("P@20 = " + precision[1]);
 		System.out.println("Recall@10 = " + recall[0]);
 		System.out.println("Recall@20 = " + recall[1]);
@@ -138,13 +139,25 @@ public class Searcher {
 		actualQueryIndex = Integer.parseInt(actualQuery.get(0));
 	    }
 	}
+
+	if (realNumberOfQueries != 0) {
+	    System.out.println(
+		    "Mean p@10: " + (fullPrecision10 / realNumberOfQueries));
+	    System.out.println(
+		    "Mean p@20: " + (fullPrecision20 / realNumberOfQueries));
+	    System.out.println(
+		    "Mean recall@10: " + (fullRecall10 / realNumberOfQueries));
+	    System.out.println(
+		    "Mean recall@10: " + (fullRecall20 / realNumberOfQueries));
+	    System.out.println(
+		    "MAP: " + (fullAveragePrecision / realNumberOfQueries));
+	}
 	
-	if (realNumberOfQueries !=0){
-	    System.out.println("Mean p@10: " + (fullPrecision10/realNumberOfQueries));
-	    System.out.println("Mean p@20: " + (fullPrecision20/realNumberOfQueries));
-	    System.out.println("Mean recall@10: " + (fullRecall10/realNumberOfQueries));
-	    System.out.println("Mean recall@10: " + (fullRecall20/realNumberOfQueries));
-	    System.out.println("MAP: " + (fullAveragePrecision /realNumberOfQueries));
+	if((tq > 0) && (td > 0) && (ndr >0)){
+	    //rf1
+	}
+	if((tq < 0) && (td < 0) && (ndr >0)){
+	    //rf2
 	}
 
     }
