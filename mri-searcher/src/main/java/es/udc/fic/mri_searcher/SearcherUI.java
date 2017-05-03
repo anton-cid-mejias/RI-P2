@@ -87,7 +87,7 @@ public class SearcherUI {
 			}
 
 		    } else {
-			int1 = Integer.parseInt(args[i + 2]);
+			int1 = Integer.parseInt(args[i + 1]);
 			if (int1 < 0) {
 			    System.out.println(
 				    "The first integer in -queries must be"
