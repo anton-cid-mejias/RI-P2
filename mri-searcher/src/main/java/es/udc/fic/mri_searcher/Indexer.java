@@ -30,7 +30,7 @@ public class Indexer {
 	    Similarity similarity) throws IOException {
 	try {
 	    System.out.println("Indexing to directory '" + index + "'...");
-
+	    
 	    Directory dir = FSDirectory.open(Paths.get(index));
 	    Analyzer analyzer = new StandardAnalyzer();
 	    IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
@@ -40,6 +40,7 @@ public class Indexer {
 
 	    IndexWriter writer = new IndexWriter(dir, iwc);
 
+	    
 	    indexDocs(writer, Paths.get(coll));
 
 	    writer.close();
@@ -61,6 +62,8 @@ public class Indexer {
 			    indexDoc(writer, file,
 				    attrs.lastModifiedTime().toMillis());
 			    return FileVisitResult.TERMINATE;
+			}else{
+			    System.out.println("Index not found: cran.all.1400");
 			}
 		    } catch (IOException ignore) {
 			// don't index files that can't be read.

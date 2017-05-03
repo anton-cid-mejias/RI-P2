@@ -18,7 +18,7 @@ public class CranQueryParser {
 	    if (!lines[i].startsWith(".I"))
 		continue;
 	    StringBuilder sb = new StringBuilder();
-	    sb.append(lines[i+1]);
+	    sb.append(lines[i++]);
 	    sb.append("\n");
 	    while (!lines[i].startsWith(".I")) {
 		sb.append(lines[i++]);
