@@ -81,7 +81,7 @@ public class SearcherUI {
 		}
 	    } else if ("-fieldsproc".equals(args[i])) {
 		fieldsproc = new String[2];
-		while (!args[i + 1].contains("-")) {
+		while ( (i+1 < args.length) && (!args[i + 1].contains("-"))) {
 		    if (args[i + 1].equals("T") || args[i + 1].equals("W")) {
 			fieldsproc[counter] = args[i + 1];
 			i++;
@@ -91,11 +91,10 @@ public class SearcherUI {
 			print_usage_and_exit();
 		    }
 		}
-		i++;
 		counter = 0;
 	    } else if ("-fieldsvisual".equals(args[i])) {
 		fieldsvisual = new String[5];
-		while (!args[i + 1].contains("-")) {
+		while ( (i+1 < args.length) && (!args[i + 1].contains("-"))) {
 		    if (args[i + 1].equals("T") || args[i + 1].equals("I")
 			    || args[i + 1].equals("W")
 			    || args[i + 1].equals("B")
@@ -108,12 +107,11 @@ public class SearcherUI {
 			print_usage_and_exit();
 		    }
 		}
-		i++;
 		counter = 0;
 	    }
 	}
 
-	if ((indexin == null) || (cut > 0) || (top > 0) || (fieldsproc == null)
+	if ((indexin == null) || (cut < 0) || (top < 0) || (fieldsproc == null)
 		|| (fieldsvisual == null)) {
 	    print_usage_and_exit();
 	}

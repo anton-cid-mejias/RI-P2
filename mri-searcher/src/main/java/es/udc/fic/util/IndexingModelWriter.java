@@ -64,20 +64,20 @@ public class IndexingModelWriter {
 	    //nothing
 	} else if (model.equals("jm")){
 	    //Can't use Dirichlet if JelinekMercer was used to index
-	    if (!indexingModelSearch){
+	    if ((indexingModelSearch != null) && (!indexingModelSearch)){
 		System.out.println("Can't use Dirichlet for searching as"
 			+ " JelinekMercer was used to index");
 		System.exit(1);
 	    }
-	    similarity = new LMJelinekMercerSimilarity(in.nextFloat());
+	    similarity = new LMJelinekMercerSimilarity(Float.parseFloat(in.next()));
 	} else if (model.equals("dir")){
 	    //Can't use JelinekMercer if Dirichlet was used to index
-	    if (indexingModelSearch){
+	    if ((indexingModelSearch != null) && (indexingModelSearch)){
 		System.out.println("Can't use JelinekMercer for searching as"
 			+ " Dirichlet was used to index");
 		System.exit(1);
 	    }
-	    similarity = new LMDirichletSimilarity(in.nextFloat());
+	    similarity = new LMDirichletSimilarity(Float.parseFloat(in.next()));
 	} else {
 	    System.out.println("The indexing model file was wrong");
 	    System.exit(1);

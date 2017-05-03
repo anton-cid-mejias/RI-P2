@@ -18,7 +18,7 @@ public class CranQueryParser {
 	    if (!lines[i].startsWith(".I"))
 		continue;
 	    StringBuilder sb = new StringBuilder();
-	    sb.append(lines[i++]);
+	    sb.append(lines[i+1]);
 	    sb.append("\n");
 	    while (!lines[i].startsWith(".I")) {
 		sb.append(lines[i++]);
@@ -36,7 +36,7 @@ public class CranQueryParser {
 	 * list of fields
 	 */
 	
-	String i = extract("I", "T", text, true);
+	String i = extract("I", "W", text, true);
 	String w = extract("W", "", text, true);
 
 	List<String> document = new LinkedList<String>();
