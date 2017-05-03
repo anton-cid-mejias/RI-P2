@@ -3,7 +3,6 @@ package es.udc.fic.mri_searcher;
 import java.io.IOException;
 
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.search.similarities.Similarity;
 
 import es.udc.fic.util.IndexingModelWriter;
 
