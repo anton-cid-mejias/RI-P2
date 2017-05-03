@@ -20,7 +20,7 @@ public class CranQueryParser {
 	    StringBuilder sb = new StringBuilder();
 	    sb.append(lines[i++]);
 	    sb.append("\n");
-	    while (!lines[i].startsWith(".I")) {
+	    while (i < lines.length && !lines[i].startsWith(".I") ) {
 		sb.append(lines[i++]);
 		sb.append("\n");
 	    }
@@ -40,7 +40,7 @@ public class CranQueryParser {
 	String w = extract("W", "", text, true);
 
 	List<String> document = new LinkedList<String>();
-	document.add(i);
+	document.add(i.replaceAll(" ", "").replaceAll("\\s",""));
 	document.add(w);
 	return document;
     }

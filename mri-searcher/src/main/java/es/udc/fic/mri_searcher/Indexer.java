@@ -62,8 +62,6 @@ public class Indexer {
 			    indexDoc(writer, file,
 				    attrs.lastModifiedTime().toMillis());
 			    return FileVisitResult.TERMINATE;
-			}else{
-			    System.out.println("Index not found: cran.all.1400");
 			}
 		    } catch (IOException ignore) {
 			// don't index files that can't be read.

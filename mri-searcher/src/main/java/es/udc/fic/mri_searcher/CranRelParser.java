@@ -21,7 +21,7 @@ public class CranRelParser {
 	queryNumber = Integer.parseInt(numbers[0]);
 	docs.add(Integer.parseInt(numbers[1]));
 	for (int i = 1; i < lines.length; ++i) {
-	    numbers = lines[0].split(" ");
+	    numbers = lines[i].split(" ");
 	    if (Integer.parseInt(numbers[0])==queryNumber){
 		docs.add(Integer.parseInt(numbers[1]));
 	    }else{
