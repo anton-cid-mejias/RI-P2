@@ -1,6 +1,8 @@
 package es.udc.fic.mri_searcher;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 
@@ -20,9 +22,8 @@ public class SearcherUI {
 	String[] ints;
 	int int1 = 0;
 	int int2 = 0;
-	int counter = 0;
-	String[] fieldsproc = null;
-	String[] fieldsvisual = null;
+	List<String> fieldsproc = null;
+	List<String> fieldsvisual = null;
 
 	// rf
 	int tq = 0;
@@ -68,8 +69,8 @@ public class SearcherUI {
 		if ("all".equals(args[i + 1])) {
 		    i++;
 		} else {
-		    if (args[i + 2].contains("-")) {
-			ints = args[i + 2].split("-");
+		    if (args[i + 1].contains("-")) {
+			ints = args[i + 1].split("-");
 			int1 = Integer.parseInt(ints[0]);
 			int2 = Integer.parseInt(ints[1]);
 			if (int1 < 0) {
@@ -97,10 +98,10 @@ public class SearcherUI {
 		    i++;
 		}
 	    } else if ("-fieldsproc".equals(args[i])) {
-		fieldsproc = new String[2];
+		fieldsproc = new ArrayList<>();
 		while ((i + 1 < args.length) && (!args[i + 1].contains("-"))) {
 		    if (args[i + 1].equals("T") || args[i + 1].equals("W")) {
-			fieldsproc[counter] = args[i + 1];
+			fieldsproc.add(args[i + 1]);
 			i++;
 		    } else {
 			System.out.println(
@@ -108,15 +109,14 @@ public class SearcherUI {
 			print_usage_and_exit();
 		    }
 		}
-		counter = 0;
 	    } else if ("-fieldsvisual".equals(args[i])) {
-		fieldsvisual = new String[5];
+		fieldsvisual = new ArrayList<>();
 		while ((i + 1 < args.length) && (!args[i + 1].contains("-"))) {
 		    if (args[i + 1].equals("T") || args[i + 1].equals("I")
 			    || args[i + 1].equals("W")
 			    || args[i + 1].equals("B")
 			    || args[i + 1].equals("A")) {
-			fieldsproc[counter] = args[i + 1];
+			fieldsvisual.add(args[i + 1]);
 			i++;
 		    } else {
 			System.out.println(
@@ -124,7 +124,6 @@ public class SearcherUI {
 			print_usage_and_exit();
 		    }
 		}
-		counter = 0;
 	    } else if ("-rf1".equals(args[i])) {
 		rf1IsUsed = true;
 		tq = Integer.parseInt(args[i + 1]);

@@ -20,7 +20,7 @@ public class CranRelParser {
 	numbers = lines[0].split(" ");
 	queryNumber = Integer.parseInt(numbers[0]);
 	docs.add(Integer.parseInt(numbers[1]));
-	for (int i = 1; i < lines.length; ++i) {
+	for (int i = 1; i < lines.length; i++) {
 	    numbers = lines[i].split(" ");
 	    if (Integer.parseInt(numbers[0])==queryNumber){
 		docs.add(Integer.parseInt(numbers[1]));
@@ -32,6 +32,8 @@ public class CranRelParser {
 		docs.add(Integer.parseInt(numbers[1]));
 	    }
 	}
+	data = new QueryNumberRelevanceDoc(queryNumber,docs);
+	documents.add(data);
 	return documents;
     }
 }

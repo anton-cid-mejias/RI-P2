@@ -14,14 +14,15 @@ public class CranParser {
 
 	/* The word .I identifies the beginning of each article */
 
-	for (int i = 0; i < lines.length; ++i) {
+	for (int i = 0; i < lines.length; i++) {
 	    if (!lines[i].startsWith(".I"))
 		continue;
 	    StringBuilder sb = new StringBuilder();
-	    sb.append(lines[i++]);
+	    sb.append(lines[i]);
 	    sb.append("\n");
-	    while (!lines[i].startsWith(".I")) {
-		sb.append(lines[i++]);
+	    while (((i+1) < lines.length) && !(lines[i+1].startsWith(".I")) ) {
+		i++;
+		sb.append(lines[i]);
 		sb.append("\n");
 	    }
 	    documents.add(handleDocument(sb.toString()));

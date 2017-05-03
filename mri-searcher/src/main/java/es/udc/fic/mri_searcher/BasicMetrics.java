@@ -5,7 +5,7 @@ import java.util.List;
 
 public class BasicMetrics {
 
-    public static RelevantDocumentsAndMetrics RelevanceHits(int queryNumber,
+    public static RelevantDocumentsAndMetrics relevanceHits(int queryNumber,
 	    List<Integer> queryDocs, List<QueryNumberRelevanceDoc> cranRel) {
 	
 	List<Integer> relevanceDocs = null;
@@ -31,7 +31,7 @@ public class BasicMetrics {
 	    if (relevanceDocs.contains(queryDocs.get(i))) {
 		relevanceDocsHits.add(doc);
 		hits++;
-		precisionSum += hits/i;
+		precisionSum += hits/(i+1);
 	    }
 	    
 	    if (i==9){
