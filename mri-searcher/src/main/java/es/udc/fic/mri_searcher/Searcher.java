@@ -24,6 +24,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
 import es.udc.fic.util.IndexingModelWriter;
+import es.udc.fic.util.SimilarityAndColl;
 
 public class Searcher {
 

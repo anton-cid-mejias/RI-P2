@@ -13,8 +13,6 @@ import org.apache.lucene.search.similarities.LMDirichletSimilarity;
 import org.apache.lucene.search.similarities.LMJelinekMercerSimilarity;
 import org.apache.lucene.search.similarities.Similarity;
 
-import es.udc.fic.mri_searcher.SimilarityAndColl;
-
 public class IndexingModelWriter {
 
     public static void writeIndexingModel(Boolean indexingModel, Float modelNumber, String index, String coll) {
@@ -50,6 +48,7 @@ public class IndexingModelWriter {
     public static SimilarityAndColl readIndexingModel(String index, Boolean indexingModelSearch) {
 	Similarity similarity = new BM25Similarity();
 	
+	float lambdaOrMu =  0;
 	Path indexingModelFile = Paths.get(index, "IndexingModel.txt");
 	Scanner in = null;
 	try {
@@ -69,7 +68,8 @@ public class IndexingModelWriter {
 			+ " JelinekMercer was used to index");
 		System.exit(1);
 	    }
-	    similarity = new LMJelinekMercerSimilarity(Float.parseFloat(in.next()));
+	    lambdaOrMu =Float.parseFloat(in.next());
+	    similarity = new LMJelinekMercerSimilarity(lambdaOrMu);
 	} else if (model.equals("dir")){
 	    //Can't use JelinekMercer if Dirichlet was used to index
 	    if ((indexingModelSearch != null) && (indexingModelSearch)){
@@ -77,13 +77,14 @@ public class IndexingModelWriter {
 			+ " Dirichlet was used to index");
 		System.exit(1);
 	    }
-	    similarity = new LMDirichletSimilarity(Float.parseFloat(in.next()));
+	    lambdaOrMu =Float.parseFloat(in.next());
+	    similarity = new LMDirichletSimilarity(lambdaOrMu);;
 	} else {
 	    System.out.println("The indexing model file was wrong");
 	    System.exit(1);
 	}
 	
-	return new SimilarityAndColl(coll, similarity);
+	return new SimilarityAndColl(coll, similarity, lambdaOrMu);
     }
 
 }
