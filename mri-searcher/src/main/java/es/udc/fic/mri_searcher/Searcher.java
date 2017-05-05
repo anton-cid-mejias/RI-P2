@@ -88,7 +88,7 @@ public class Searcher {
 	    actualQuery = itr.next();
 	    realNumberOfQueries++;
 	    query = parser.parse(actualQuery.get(1).replaceAll("\\?", ""));
-	    topDocs = searcher.search(query, top);
+	    topDocs = searcher.search(query, Math.max(20, Math.max(cut, top)));
 	    scoreDocs = Arrays.asList(topDocs.scoreDocs);
 
 	    queryDocs = new ArrayList<Integer>();
@@ -101,7 +101,7 @@ public class Searcher {
 
 	    // Iterating queries
 	    System.out.println("Query number " + i + ": " + query.toString());
-	    printScoreDocInfo(scoreDocs, reader, fieldsVisual,
+	    printScoreDocInfo(top, scoreDocs, reader, fieldsVisual,
 			relevantDocs);
 	    // Printing metrics
 	    precision = relDocsandMetrics.getPrecision();
@@ -140,12 +140,15 @@ public class Searcher {
 	return result.toString("UTF-8");
     }
 
-    private static void printScoreDocInfo(List<ScoreDoc> scoreDocs,
+    private static void printScoreDocInfo(int top, List<ScoreDoc> scoreDocs,
 	    DirectoryReader reader, List<String> fieldsVisual,
 	    List<Integer> relevantDocs) throws IOException {
 	int j = 0;
 	for (ScoreDoc scoreDoc : scoreDocs) {
 	    j++;
+	    if (j > top){
+		return;
+	    }
 	    Document doc = reader.document(scoreDoc.doc);
 	    System.out.println("Document number " + j + ": ");
 	    System.out.println("------");
