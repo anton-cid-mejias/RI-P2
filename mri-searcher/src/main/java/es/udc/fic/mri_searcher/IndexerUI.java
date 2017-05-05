@@ -25,7 +25,7 @@ public class IndexerUI {
 	String coll = null;
 	//Null = default, true for jm lambda, false for dir mu
 	Boolean indexingModel = null;
-	Float modelNumber = null;
+	float modelNumber = 0;
 	Similarity similarity = new BM25Similarity();
 
 	for (int i = 0; i < args.length; i++) {
@@ -62,6 +62,7 @@ public class IndexerUI {
 	
 	if ((index == null) || (coll == null)){
 	    System.out.println("Options -index and -coll are required to run this program");
+	    print_usage_and_exit();
 	}
 
 	// Openmode will be create_or_append by default
@@ -71,6 +72,11 @@ public class IndexerUI {
 	    } else if (openmodeString.equals("append")) {
 		openmode = OpenMode.APPEND;
 	    }
+	}
+	
+	if ((modelNumber > 1) || (modelNumber < 0)) {
+	    System.out.println("Lambda and mu must be between 0 and 1");
+	    print_usage_and_exit();
 	}
 	
 	//Cambiar entre default, jm lambda, dir mu

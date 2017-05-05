@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -285,5 +284,13 @@ public class Searcher {
 		    fullAveragePrecision);
 	}
 
+    }
+    
+    private static void prfjm (int nd, int nw, int lambdaOrMU){
+	//Pag 32 a 45 de slides tema 7
+	//P(w|R) = ∑ D Є PRset P(D) P(w|D) ∏=1,n P(qi|D) 
+	//int P(D) = 1 / PRset.size();
+	//P(w|D) = (1 - lambdaOrMu)  ??? (pag 34) + lambda * ¿¿¿
+	//P(qi|D) = ¿?
     }
 }
