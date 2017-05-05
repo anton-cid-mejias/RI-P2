@@ -23,14 +23,18 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import es.udc.fic.util.IndexingModelWriter;
+
 public class Searcher {
 
     //
-    public static void run(String index, SimilarityAndColl simColl, int int1,
+    public static void run(String index, Boolean indexingModel, int int1,
 	    int int2, int cut, int top, List<String> fieldsProcs,
 	    List<String> fieldsVisual, int tq, int td, int ndr, int nd, int nw,
 	    boolean explain) throws IOException, ParseException {
-
+	
+	SimilarityAndColl simColl = IndexingModelWriter
+		.readIndexingModel(index, indexingModel);
 	Directory indir = FSDirectory.open(Paths.get(index));
 	DirectoryReader reader = DirectoryReader.open(indir);
 	IndexSearcher searcher = new IndexSearcher(reader);
@@ -82,7 +86,7 @@ public class Searcher {
 	float fullRecall10 = 0;
 	float fullRecall20 = 0;
 	float fullAveragePrecision = 0;
-	int realNumberOfQueries = 0;
+	float realNumberOfQueries = 0;
 
 	for (int i = int1; i <= int2; i++) { 
 	    actualQuery = itr.next();
@@ -126,6 +130,14 @@ public class Searcher {
 	}
 	if ((tq < 0) && (td < 0) && (ndr > 0)) {
 	    // rf2
+	}
+	
+	if ((nd > 0) && (nw > 0)){
+	    if (indexingModel) {
+		//prfjm
+	    }else{
+		//prfdir
+	    }
 	}
 
     }
@@ -177,7 +189,7 @@ public class Searcher {
 	System.out.println();
     }
 
-    private static void printMeanQueryMetrics(int realNumberOfQueries,
+    private static void printMeanQueryMetrics(float realNumberOfQueries,
 	    float fullPrecision10, float fullPrecision20, float fullRecall10,
 	    float fullRecall20, float fullAveragePrecision) {
 	System.out.println(

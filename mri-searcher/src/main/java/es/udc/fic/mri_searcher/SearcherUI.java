@@ -203,9 +203,7 @@ public class SearcherUI {
 	    indexingModel = false;
 	}
 
-	SimilarityAndColl simColl = IndexingModelWriter
-		.readIndexingModel(indexin, indexingModel);
-	Searcher.run(indexin, simColl, int1, int2, cut, top, fieldsproc,
+	Searcher.run(indexin, indexingModel, int1, int2, cut, top, fieldsproc,
 		fieldsvisual, tq, td, ndr, nd, nw, explain);
     }
 
