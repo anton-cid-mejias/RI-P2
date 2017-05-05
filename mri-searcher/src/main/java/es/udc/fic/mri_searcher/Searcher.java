@@ -100,7 +100,7 @@ public class Searcher {
 		queryDocs.add(scoreDoc.doc +1);
 	    }
 	    relDocsandMetrics = BasicMetrics.relevanceHits(i, queryDocs,
-		    queriesRelevance);
+		    queriesRelevance,cut);
 	    relevantDocs = relDocsandMetrics.getRelevantDocs();
 
 	    // Iterating queries

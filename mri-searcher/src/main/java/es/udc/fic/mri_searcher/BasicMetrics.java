@@ -6,7 +6,7 @@ import java.util.List;
 public class BasicMetrics {
 
     public static RelevantDocumentsAndMetrics relevanceHits(int queryNumber,
-	    List<Integer> queryDocs, List<QueryNumberRelevanceDoc> cranRel) {
+	    List<Integer> queryDocs, List<QueryNumberRelevanceDoc> cranRel, int cut) {
 	
 	List<Integer> relevanceDocs = null;
 	List<Integer> relevanceDocsHits = new ArrayList<>();
@@ -31,7 +31,9 @@ public class BasicMetrics {
 	    if (relevanceDocs.contains(queryDocs.get(i))) {
 		relevanceDocsHits.add(doc);
 		hits++;
-		precisionSum += hits/(i+1);
+		if (i<cut){
+		    precisionSum += hits/(i+1);
+		}
 	    }
 	    
 	    if (i==9){
@@ -50,7 +52,7 @@ public class BasicMetrics {
 	recall[0] = (float)(hits10/(float)numberRelevanceDocs);
 	recall[1] = hits20/(float)numberRelevanceDocs;
 	
-	float average_precision = precisionSum/numberRelevanceDocs;
+	float average_precision = precisionSum/cut;
 	
 	return new RelevantDocumentsAndMetrics(hits10,hits20,relevanceDocsHits,numberRelevanceDocs,p,recall,average_precision);
     }
