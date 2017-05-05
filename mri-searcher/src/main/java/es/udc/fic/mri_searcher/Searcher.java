@@ -84,7 +84,7 @@ public class Searcher {
 	float fullAveragePrecision = 0;
 	int realNumberOfQueries = 0;
 
-	for (int i = int1; i <= int2; i++) {
+	for (int i = int1; i <= int2; i++) { 
 	    actualQuery = itr.next();
 	    realNumberOfQueries++;
 	    query = parser.parse(actualQuery.get(1).replaceAll("\\?", ""));
