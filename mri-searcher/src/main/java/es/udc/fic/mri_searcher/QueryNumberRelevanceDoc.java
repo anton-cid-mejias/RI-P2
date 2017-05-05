@@ -1,5 +1,6 @@
 package es.udc.fic.mri_searcher;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class QueryNumberRelevanceDoc {
@@ -9,7 +10,7 @@ public class QueryNumberRelevanceDoc {
     
     public QueryNumberRelevanceDoc(int queryNumber, List<Integer> relevanceDoc) {
 	this.queryNumber = queryNumber;
-	this.relevanceDoc = relevanceDoc;
+	this.relevanceDoc = new ArrayList<Integer>(relevanceDoc);
     }
 
     public int getQueryNumber() {
