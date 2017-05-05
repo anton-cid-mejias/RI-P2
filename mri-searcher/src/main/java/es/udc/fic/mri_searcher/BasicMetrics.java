@@ -43,12 +43,12 @@ public class BasicMetrics {
 	}
 	
 	float[] p = new float[2];
-	p[0] = hits10/10;
-	p[1] = hits20/20;
+	p[0] = (float) (hits20/10.0);
+	p[1] = (float) (hits20/20.0);
 	
 	float[] recall = new float[2];
-	recall[0] = hits10/numberRelevanceDocs;
-	recall[1] = hits20/numberRelevanceDocs;
+	recall[0] = (float)(hits10/(float)numberRelevanceDocs);
+	recall[1] = hits20/(float)numberRelevanceDocs;
 	
 	float average_precision = precisionSum/numberRelevanceDocs;
 	
