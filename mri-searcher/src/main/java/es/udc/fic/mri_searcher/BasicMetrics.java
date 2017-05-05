@@ -45,7 +45,7 @@ public class BasicMetrics {
 	}
 	
 	float[] p = new float[2];
-	p[0] = (float) (hits20/10.0);
+	p[0] = (float) (hits10/10.0);
 	p[1] = (float) (hits20/20.0);
 	
 	float[] recall = new float[2];

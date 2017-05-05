@@ -32,9 +32,9 @@ public class Searcher {
 	    int int2, int cut, int top, List<String> fieldsProcs,
 	    List<String> fieldsVisual, int tq, int td, int ndr, int nd, int nw,
 	    boolean explain) throws IOException, ParseException {
-	
-	SimilarityAndColl simColl = IndexingModelWriter
-		.readIndexingModel(index, indexingModel);
+
+	SimilarityAndColl simColl = IndexingModelWriter.readIndexingModel(index,
+		indexingModel);
 	Directory indir = FSDirectory.open(Paths.get(index));
 	DirectoryReader reader = DirectoryReader.open(indir);
 	IndexSearcher searcher = new IndexSearcher(reader);
@@ -69,7 +69,6 @@ public class Searcher {
 	MultiFieldQueryParser parser = new MultiFieldQueryParser(
 		fieldsProcsArray, new StandardAnalyzer());
 
-	Iterator<List<String>> itr = queries.iterator();
 	List<String> actualQuery = null;
 	Query query = null;
 	TopDocs topDocs = null;
@@ -88,8 +87,8 @@ public class Searcher {
 	float fullAveragePrecision = 0;
 	float realNumberOfQueries = 0;
 
-	for (int i = int1; i <= int2; i++) { 
-	    actualQuery = itr.next();
+	for (int i = int1; i <= int2; i++) {
+	    actualQuery = queries.get(i - 1);
 	    realNumberOfQueries++;
 	    query = parser.parse(actualQuery.get(1).replaceAll("\\?", ""));
 	    topDocs = searcher.search(query, Math.max(20, Math.max(cut, top)));
@@ -97,16 +96,16 @@ public class Searcher {
 
 	    queryDocs = new ArrayList<Integer>();
 	    for (ScoreDoc scoreDoc : scoreDocs) {
-		queryDocs.add(scoreDoc.doc +1);
+		queryDocs.add(scoreDoc.doc + 1);
 	    }
 	    relDocsandMetrics = BasicMetrics.relevanceHits(i, queryDocs,
-		    queriesRelevance,cut);
+		    queriesRelevance, cut);
 	    relevantDocs = relDocsandMetrics.getRelevantDocs();
 
 	    // Iterating queries
 	    System.out.println("Query number " + i + ": " + query.toString());
 	    printScoreDocInfo(top, scoreDocs, reader, fieldsVisual,
-			relevantDocs);
+		    relevantDocs);
 	    // Printing metrics
 	    precision = relDocsandMetrics.getPrecision();
 	    recall = relDocsandMetrics.getRecall();
@@ -125,18 +124,21 @@ public class Searcher {
 		    fullAveragePrecision);
 	}
 
+	//System.out.println("tq: " + tq + " td: " + td + " ndr: " + ndr);
 	if ((tq > 0) && (td > 0) && (ndr > 0)) {
 	    // rf1
 	}
-	if ((tq < 0) && (td < 0) && (ndr > 0)) {
-	    // rf2
-	}
 	
-	if ((nd > 0) && (nw > 0)){
+	if ((tq == 0) && (td == 0) && (ndr > 0)) {
+	    rf2(ndr, int1, int2, reader, searcher, queries, parser,
+		    queriesRelevance, cut, top, fieldsVisual);
+	}
+
+	if ((nd > 0) && (nw > 0)) {
 	    if (indexingModel) {
-		//prfjm
-	    }else{
-		//prfdir
+		// prfjm
+	    } else {
+		// prfdir
 	    }
 	}
 
@@ -158,7 +160,7 @@ public class Searcher {
 	int j = 0;
 	for (ScoreDoc scoreDoc : scoreDocs) {
 	    j++;
-	    if (j > top){
+	    if (j > top) {
 		return;
 	    }
 	    Document doc = reader.document(scoreDoc.doc);
@@ -170,7 +172,7 @@ public class Searcher {
 	    System.out.println("------");
 	    System.out.println("Score: " + scoreDoc.score);
 	    System.out.print("Relevant: ");
-	    if (relevantDocs.contains(scoreDoc.doc+1)) {
+	    if (relevantDocs.contains(scoreDoc.doc + 1)) {
 		System.out.println("yes");
 	    } else {
 		System.out.println("no");
@@ -202,5 +204,85 @@ public class Searcher {
 		"Mean recall@10: " + (fullRecall20 / realNumberOfQueries));
 	System.out.println(
 		"MAP: " + (fullAveragePrecision / realNumberOfQueries));
+    }
+
+    private static void rf1(int tq, int td, int ndr) {
+
+    }
+
+    private static void rf2(int ndr, int int1, int int2, DirectoryReader reader,
+	    IndexSearcher searcher, List<List<String>> queries,
+	    MultiFieldQueryParser parser,
+	    List<QueryNumberRelevanceDoc> queriesRelevance, int cut, int top,
+	    List<String> fieldsVisual) throws IOException, ParseException {
+
+	List<String> actualQuery = null;
+	Query query = null;
+	TopDocs topDocs = null;
+	List<ScoreDoc> scoreDocs = null;
+	List<Integer> queryDocs = null;
+	RelevantDocumentsAndMetrics relDocsandMetrics = null;
+	List<Integer> relevantDocs = null;
+	QueryNumberRelevanceDoc qd = null;
+
+	// Metrics
+	float[] precision = null;
+	float[] recall = null;
+	float fullPrecision10 = 0;
+	float fullPrecision20 = 0;
+	float fullRecall10 = 0;
+	float fullRecall20 = 0;
+	float fullAveragePrecision = 0;
+	float realNumberOfQueries = 0;
+	String titles = null;
+
+	System.out.println();
+	System.out.println("Rf2:");
+	for (int i = int1; i <= int2; i++) {
+	    realNumberOfQueries++;
+	    actualQuery = queries.get(i - 1);
+
+	    titles = "";
+	    qd = queriesRelevance.get(i - 1);
+	    for (Integer j : qd.getRelevanceDoc()) {
+		titles += " " + searcher.doc(j - 1).get("T");
+	    }
+
+	    query = parser
+		    .parse((actualQuery.get(1) + titles).replaceAll("\\?", ""));
+	    topDocs = searcher.search(query, Math.max(20, Math.max(cut, top)));
+	    scoreDocs = Arrays.asList(topDocs.scoreDocs);
+
+	    queryDocs = new ArrayList<Integer>();
+	    for (ScoreDoc scoreDoc : scoreDocs) {
+		queryDocs.add(scoreDoc.doc + 1);
+	    }
+	    
+	    relDocsandMetrics = BasicMetrics.relevanceHits(i, queryDocs,
+		    queriesRelevance, cut);
+	    relevantDocs = relDocsandMetrics.getRelevantDocs();
+
+	    // Iterating queries
+	    System.out.println("Query number " + i + ": " + query.toString());
+	    printScoreDocInfo(top, scoreDocs, reader, fieldsVisual,
+		    relevantDocs);
+	    // Printing metrics
+	    precision = relDocsandMetrics.getPrecision();
+	    recall = relDocsandMetrics.getRecall();
+	    printQueryMetrics(precision, recall);
+	    fullPrecision10 += precision[0];
+	    fullPrecision20 += precision[1];
+	    fullRecall10 += recall[0];
+	    fullRecall20 += recall[1];
+	    fullAveragePrecision += relDocsandMetrics.getAveragePrecision();
+
+	}
+
+	if (realNumberOfQueries != 0) {
+	    printMeanQueryMetrics(realNumberOfQueries, fullPrecision10,
+		    fullPrecision20, fullRecall10, fullRecall20,
+		    fullAveragePrecision);
+	}
+
     }
 }
