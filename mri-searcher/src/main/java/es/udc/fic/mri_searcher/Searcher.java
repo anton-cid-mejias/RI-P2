@@ -170,7 +170,7 @@ public class Searcher {
 	    System.out.println("------");
 	    System.out.println("Score: " + scoreDoc.score);
 	    System.out.print("Relevant: ");
-	    if (relevantDocs.contains(scoreDoc.doc)) {
+	    if (relevantDocs.contains(scoreDoc.doc+1)) {
 		System.out.println("yes");
 	    } else {
 		System.out.println("no");
