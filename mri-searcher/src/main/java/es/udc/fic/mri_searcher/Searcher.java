@@ -69,12 +69,10 @@ public class Searcher {
 	List<String> actualQuery = null;
 	Query query = null;
 	TopDocs topDocs = null;
-	Document doc = null;
 	List<ScoreDoc> scoreDocs = null;
 	List<Integer> queryDocs = null;
 	RelevantDocumentsAndMetrics relDocsandMetrics = null;
 	List<Integer> relevantDocs = null;
-	int j = 0;
 
 	// Metrics
 	float[] precision = null;
@@ -95,7 +93,7 @@ public class Searcher {
 
 	    queryDocs = new ArrayList<Integer>();
 	    for (ScoreDoc scoreDoc : scoreDocs) {
-		queryDocs.add(scoreDoc.doc);
+		queryDocs.add(scoreDoc.doc +1);
 	    }
 	    relDocsandMetrics = BasicMetrics.relevanceHits(i, queryDocs,
 		    queriesRelevance);
@@ -103,35 +101,12 @@ public class Searcher {
 
 	    // Iterating queries
 	    System.out.println("Query number " + i + ": " + query.toString());
-	    j = 0;
-	    for (ScoreDoc scoreDoc : scoreDocs) {
-		j++;
-		doc = reader.document(scoreDoc.doc);
-		System.out.println("Document number " + j + ": ");
-		System.out.println("------");
-		for (String field : fieldsVisual) {
-		    System.out.println(field + ": " + doc.get(field));
-		}
-		System.out.println("------");
-		System.out.println("Score: " + scoreDoc.score);
-		System.out.print("Relevant: ");
-		if (relevantDocs.contains(scoreDoc.doc)) {
-		    System.out.println("yes");
-		} else {
-		    System.out.println("no");
-		}
-		System.out.println();
-	    }
+	    printScoreDocInfo(scoreDocs, reader, fieldsVisual,
+			relevantDocs);
 	    // Printing metrics
 	    precision = relDocsandMetrics.getPrecision();
 	    recall = relDocsandMetrics.getRecall();
-	    System.out.println("Query metrics:");
-	    System.out.println("P@10 = " + precision[0]);
-	    System.out.println("P@20 = " + precision[1]);
-	    System.out.println("Recall@10 = " + recall[0]);
-	    System.out.println("Recall@20 = " + recall[1]);
-	    System.out.println();
-	    System.out.println();
+	    printQueryMetrics(precision, recall);
 	    fullPrecision10 += precision[0];
 	    fullPrecision20 += precision[1];
 	    fullRecall10 += recall[0];
@@ -141,16 +116,9 @@ public class Searcher {
 	}
 
 	if (realNumberOfQueries != 0) {
-	    System.out.println(
-		    "Mean p@10: " + (fullPrecision10 / realNumberOfQueries));
-	    System.out.println(
-		    "Mean p@20: " + (fullPrecision20 / realNumberOfQueries));
-	    System.out.println(
-		    "Mean recall@10: " + (fullRecall10 / realNumberOfQueries));
-	    System.out.println(
-		    "Mean recall@10: " + (fullRecall20 / realNumberOfQueries));
-	    System.out.println(
-		    "MAP: " + (fullAveragePrecision / realNumberOfQueries));
+	    printMeanQueryMetrics(realNumberOfQueries, fullPrecision10,
+		    fullPrecision20, fullRecall10, fullRecall20,
+		    fullAveragePrecision);
 	}
 
 	if ((tq > 0) && (td > 0) && (ndr > 0)) {
@@ -170,5 +138,54 @@ public class Searcher {
 	    result.write(buffer, 0, length);
 	}
 	return result.toString("UTF-8");
+    }
+
+    private static void printScoreDocInfo(List<ScoreDoc> scoreDocs,
+	    DirectoryReader reader, List<String> fieldsVisual,
+	    List<Integer> relevantDocs) throws IOException {
+	int j = 0;
+	for (ScoreDoc scoreDoc : scoreDocs) {
+	    j++;
+	    Document doc = reader.document(scoreDoc.doc);
+	    System.out.println("Document number " + j + ": ");
+	    System.out.println("------");
+	    for (String field : fieldsVisual) {
+		System.out.println(field + ": " + doc.get(field));
+	    }
+	    System.out.println("------");
+	    System.out.println("Score: " + scoreDoc.score);
+	    System.out.print("Relevant: ");
+	    if (relevantDocs.contains(scoreDoc.doc)) {
+		System.out.println("yes");
+	    } else {
+		System.out.println("no");
+	    }
+	    System.out.println();
+	}
+    }
+
+    private static void printQueryMetrics(float[] precision, float[] recall) {
+	System.out.println("Query metrics:");
+	System.out.println("P@10 = " + precision[0]);
+	System.out.println("P@20 = " + precision[1]);
+	System.out.println("Recall@10 = " + recall[0]);
+	System.out.println("Recall@20 = " + recall[1]);
+	System.out.println();
+	System.out.println();
+    }
+
+    private static void printMeanQueryMetrics(int realNumberOfQueries,
+	    float fullPrecision10, float fullPrecision20, float fullRecall10,
+	    float fullRecall20, float fullAveragePrecision) {
+	System.out.println(
+		"Mean p@10: " + (fullPrecision10 / realNumberOfQueries));
+	System.out.println(
+		"Mean p@20: " + (fullPrecision20 / realNumberOfQueries));
+	System.out.println(
+		"Mean recall@10: " + (fullRecall10 / realNumberOfQueries));
+	System.out.println(
+		"Mean recall@10: " + (fullRecall20 / realNumberOfQueries));
+	System.out.println(
+		"MAP: " + (fullAveragePrecision / realNumberOfQueries));
     }
 }
