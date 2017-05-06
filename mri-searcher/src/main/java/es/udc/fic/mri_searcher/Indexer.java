@@ -12,11 +12,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.FieldInvertState;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -42,7 +44,6 @@ public class Indexer {
 
 	    
 	    indexDocs(writer, Paths.get(coll));
-
 	    writer.close();
 	} catch (IOException e) {
 	    System.out.println(" caught a " + e.getClass() + "\n with message: "
@@ -79,13 +80,15 @@ public class Indexer {
 
     private static void indexDoc(IndexWriter writer, Path file,
 	    long lastModified) throws IOException {
+	
 	try (InputStream stream = Files.newInputStream(file)) {
 	    List<List<String>> allCran = CranParser
 		    .parseString(new StringBuffer(toString(stream)));
 
 	    for (List<String> cran : allCran) {
 		Document doc = new Document();
-
+		int counter = 0;
+		
 		// I
 		Field I = new StringField("I", cran.get(0),
 			Field.Store.YES);
@@ -95,7 +98,15 @@ public class Indexer {
 		Field T = new TextField("T", cran.get(1),
 			Field.Store.YES);
 		doc.add(T);
-
+		//Token counter
+		TokenStream tokens = writer.getAnalyzer().tokenStream("T", T.stringValue());
+		tokens.reset();
+		while (tokens.incrementToken()){
+		    counter++;
+		}
+		System.out.println(counter);
+		tokens.close();
+		
 		// A
 		Field A = new TextField("A", cran.get(2),
 			Field.Store.YES);

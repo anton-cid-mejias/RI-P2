@@ -1,12 +1,16 @@
 package es.udc.fic.mri_searcher;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
@@ -45,14 +49,13 @@ public class Processor {
 		    int i = listTerms.indexOf(termTfIdf);
 		    termTfIdf = listTerms.get(i);
 		}
-
+		
 		PostingsEnum postingsEnum = MultiFields.getTermDocsEnum(
 			indexReader, field, term, PostingsEnum.FREQS);
 		int i;
 		while ((i = postingsEnum
 			.nextDoc()) != PostingsEnum.NO_MORE_DOCS) {
 		    int freq = postingsEnum.freq();
-		    i++;
 		    
 		    if (termTfIdf.getTf().containsKey(i)) {
 			int tf = termTfIdf.getTf().get(i);
@@ -99,6 +102,11 @@ public class Processor {
 	return documentsTermsList;
     }
 
+    public static void getLenght(Reader reader,String field){
+	Analyzer analyzer = new StandardAnalyzer();
+	TokenStream stream = analyzer.tokenStream(field, reader);
+    }
+    
     public static void main(String[] args) throws IOException {
 
 	String dir = "/home/anton/lucene/Cran/indice";
