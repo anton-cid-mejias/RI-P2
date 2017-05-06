@@ -10,9 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -97,6 +96,17 @@ public class Searcher {
 	    queryString = actualQuery.get(1).replaceAll("\\?", "")
 		    .replaceAll("\n", " ");
 	    query = parser.parse(queryString);
+	    //This was done to extract the words the query used (no stopwords)
+	    if (fieldsProcs.contains("T")) {
+		queryString = query.toString("T").replaceAll("\\(", "")
+			.replaceAll("\\)", "").replaceAll("W:", "");
+		queryString = Arrays.stream(queryString.split(" ")).distinct().collect(Collectors.joining(" "));
+	    } else if (fieldsProcs.contains("W")) {
+		queryString = query.toString("T").replaceAll("\\(", "")
+			.replaceAll("\\)", "").replaceAll("T:", "");
+		queryString = Arrays.stream(queryString.split(" ")).distinct().collect(Collectors.joining(" "));
+
+	    }
 	    topDocs = searcher.search(query, Math.max(20, Math.max(cut, top)));
 	    scoreDocs = Arrays.asList(topDocs.scoreDocs);
 	    queriesAndResults
@@ -253,7 +263,6 @@ public class Searcher {
 	float fullRecall20 = 0;
 	float fullAveragePrecision = 0;
 	float realNumberOfQueries = 0;
-	String titles = null;
 
 	List<TermTfIdf> tfIdfList = Processor.getTfIdf(reader, fieldsProcs);
 	String[] queryWords;
@@ -310,8 +319,8 @@ public class Searcher {
 		    Math.max(20, Math.max(cut, top)));
 	    scoreDocs = Arrays.asList(topDocs.scoreDocs);
 
-	    metrics = printQueryInfo(i, cut, top, fieldsVisual, finalQuery, reader,
-		    queriesRelevance, relDocsandMetrics, scoreDocs);
+	    metrics = printQueryInfo(i, cut, top, fieldsVisual, finalQuery,
+		    reader, queriesRelevance, relDocsandMetrics, scoreDocs);
 
 	    fullPrecision10 += metrics[0];
 	    fullPrecision20 += metrics[1];
@@ -357,8 +366,16 @@ public class Searcher {
 
 	    titles = "";
 	    qd = queriesRelevance.get(i - 1);
+	    if (ndr > qd.getRelevanceDoc().size()) {
+		ndr = qd.getRelevanceDoc().size();
+	    }
+	    int ndrCopy = ndr;
 	    for (Integer j : qd.getRelevanceDoc()) {
+		ndrCopy--;
 		titles += " " + searcher.doc(j - 1).get("T");
+		if (ndrCopy == 0) {
+		    break;
+		}
 	    }
 
 	    query = parser
@@ -399,7 +416,7 @@ public class Searcher {
 	HashMap<Integer, Float> ndDocAndProb;
 	float probForAllTermsQueryInDoc = 1;
 	List<TermAndRanking> termsAndRankings;
-	float ranking = 0;
+	TermAndRanking ranking = null;
 
 	List<TermTfIdf> tfIdf = Processor.getTfIdf(reader, fieldsProcs);
 
@@ -465,18 +482,27 @@ public class Searcher {
 			    tf = 0;
 			}
 		    }
-		    ///
-		    System.out.println("Tf= " + tf + " for term " + term
-			    + " in doc " + (i + 1));
-		    ///
-		    probForAllTermsQueryInDoc = probForAllTermsQueryInDoc * (tf
-			    / Processor.getDocLength(i, fieldsProcs, reader));
+		    
+		    probForAllTermsQueryInDoc = probForAllTermsQueryInDoc * 
+			    ((float) tf
+			    / (float) Processor.getDocLength(i, fieldsProcs, reader));
+		    //System.out.println("Tf= " + tf + " for term " + term + " in doc " + (i + 1));
+		    //System.out.println(probForAllTermsQueryInDoc);
+		    
 		}
+		/* Try to catch ∏=1,n P(qi|D) != 0
+		if (probForAllTermsQueryInDoc > 0){
+		    System.out.println("Doc: " +(i+1) + " Value:" + probForAllTermsQueryInDoc);
+		    //System.exit(1);
+		    try {
+			Thread.sleep(4000);
+		    } catch (InterruptedException e) {}
+		}
+		*/
 		ndDocAndProb.put(i, probForAllTermsQueryInDoc);
 	    }
 
 	    termsAndRankings = new ArrayList<>();
-	    ranking = 0;
 	    for (String term : querySplited) {
 		if (indexingModel) {
 		    ranking = getPrfjmProbability(lambdaOrMU, term, ndDocs,
@@ -487,7 +513,7 @@ public class Searcher {
 			    ndDocAndProb, searcher, reader, fieldsProcs,
 			    colLength, queryTermsTfs.get(term));
 		}
-		termsAndRankings.add(new TermAndRanking(term, ranking));
+		termsAndRankings.add(ranking);
 	    }
 
 	    Collections.sort(termsAndRankings);
@@ -519,12 +545,45 @@ public class Searcher {
 	    fullRecall20 += metrics[3];
 	    fullAveragePrecision += metrics[4];
 	    ///////////////////////
+
+	    if (explain){
+		explainPrf(nw, ndDocs, termsAndRankings);
+	    }
+
 	}
 
 	printMeanQueryMetrics(realNumberOfQueries, fullPrecision10,
 		fullPrecision20, fullRecall10, fullRecall20,
 		fullAveragePrecision);
 
+    }
+
+    private static void explainPrf(int nw, List<Integer> ndDocs,
+	List<TermAndRanking> termsAndRankings) {
+	List<Float> probdList = null;
+	List<Float> pwdList = null;
+	List<Float> pQiDList = null;
+	int i = 0;
+	int j = 0;
+	for (TermAndRanking tR : termsAndRankings) {
+	    i++;
+	    j=0;
+	    System.out.println("For the term: " + tR.getTerm());
+	    probdList = tR.getProbdList();
+	    pwdList = tR.getPwdList();
+	    pQiDList = tR.getpQiDList();
+	    for (Integer d : ndDocs) {
+		System.out.println("D=" + (d+1) + " P(D)=" + probdList.get(j)
+			+ " P(w|D)=" + pwdList.get(j) + " ∏=1,n P(qi|D)="
+			+ pQiDList.get(j));
+		j++;
+	    }
+	    System.out.println();
+	    if (i >= nw){
+		break;
+	    }
+	}
+	System.out.println();
     }
 
     private static HashMap<Integer, Integer> getHashMapTfForTerm(
@@ -538,10 +597,10 @@ public class Searcher {
 	return emergencyMap;
     }
 
-    private static float getPrfjmProbability(float lambdaOrMU, String term,
-	    List<Integer> ndDocs, HashMap<Integer, Float> ndDocAndProb,
-	    IndexSearcher searcher, DirectoryReader reader,
-	    List<String> fieldsProcs, int colLength,
+    private static TermAndRanking getPrfjmProbability(float lambdaOrMU,
+	    String term, List<Integer> ndDocs,
+	    HashMap<Integer, Float> ndDocAndProb, IndexSearcher searcher,
+	    DirectoryReader reader, List<String> fieldsProcs, int colLength,
 	    HashMap<Integer, Integer> mapDocTf) throws IOException {
 	// Pag 32 a 45 de slides tema 7
 	// P(w|R) = ∑ D Є PRset P(D) P(w|D) ∏=1,n P(qi|D) =sumProb
@@ -553,36 +612,50 @@ public class Searcher {
 	// la colección entre su tamaño)
 	// ∏=1,n P(qi|D) = ndDocAndProb.get(d)
 
-	float probD = 1 / ndDocs.size();
+	float probD = (float) 1 / (float) ndDocs.size();
 	float pwd = 0;
+	float pQiD = 0;
 	float allTfCollection = 0;
-	for (int i = 0; i < mapDocTf.size(); i++) {
+	for (int i = 0; i < 1400; i++) {
 	    if (mapDocTf.containsKey(i)) {
-		allTfCollection += mapDocTf.get(i);
+		allTfCollection += (float)mapDocTf.get(i);
 	    }
 	}
 
 	float tf = 0;
 	float sumProb = 0;
+	List<Float> probdList = new ArrayList<>();
+	List<Float> pwdList = new ArrayList<>();
+	List<Float> pQiDList = new ArrayList<>();
 	for (Integer d : ndDocs) {
 	    if (mapDocTf.containsKey(d)) {
 		tf = mapDocTf.get(d);
 	    } else {
 		tf = 0;
 	    }
-	    pwd = (1 - lambdaOrMU)
-		    * (tf / Processor.getDocLength(d, fieldsProcs, reader))
-		    + lambdaOrMU * (allTfCollection / colLength);
-	    sumProb += probD * pwd * ndDocAndProb.get(d);
+	    pwd = ((float)1 - lambdaOrMU)
+		    * (tf / (float) Processor.getDocLength(d, fieldsProcs, reader))
+		    + lambdaOrMU * (allTfCollection / (float) colLength);
+	    pQiD = ndDocAndProb.get(d);
+	    sumProb += probD * pwd * pQiD;
+	    probdList.add(probD);
+	    pwdList.add(pwd);
+	    pQiDList.add(pQiD);
+	    
+	    /*
+	    System.out.println(pwd + " Tf:"+ tf + " |D|:" + Processor.getDocLength(d, fieldsProcs, reader)
+	    +" lambda:" + lambdaOrMU + "  Tfc:" + allTfCollection + " |C|:" + colLength + " Term: " + term);
+	    System.exit(1);
+	    */
 	}
 
-	return sumProb;
+	return new TermAndRanking(term, sumProb, probdList, pwdList, pQiDList);
     }
 
-    private static float getPrfdirProbability(float lambdaOrMU, String term,
-	    List<Integer> ndDocs, HashMap<Integer, Float> ndDocAndProb,
-	    IndexSearcher searcher, DirectoryReader reader,
-	    List<String> fieldsProcs, int colLength,
+    private static TermAndRanking getPrfdirProbability(float lambdaOrMU,
+	    String term, List<Integer> ndDocs,
+	    HashMap<Integer, Float> ndDocAndProb, IndexSearcher searcher,
+	    DirectoryReader reader, List<String> fieldsProcs, int colLength,
 	    HashMap<Integer, Integer> mapDocTf) throws IOException {
 	// Pag 32 a 45 de slides tema 7
 	// P(w|R) = ∑ D Є PRset P(D) P(w|D) ∏=1,n P(qi|D) =sumProb
@@ -590,29 +663,43 @@ public class Searcher {
 	// P(w|D) = (f w,D + mu * (f w,C / |C|)) / (|D| + mu) = pwd
 	// ∏=1,n P(qi|D) = ndDocAndProb.get(d)
 
-	float probD = 1 / ndDocs.size();
+	float probD = (float) 1 / (float) ndDocs.size();
 	float pwd = 0;
+	float pQiD = 0;
 	float allTfCollection = 0;
-	for (int i = 0; i < mapDocTf.size(); i++) {
+	for (int i = 0; i < 1400; i++) {
 	    if (mapDocTf.containsKey(i)) {
-		allTfCollection += mapDocTf.get(i);
+		allTfCollection += (float) mapDocTf.get(i);
+	    }else {
 	    }
 	}
 
 	float sumProb = 0;
 	float tf = 0;
+	List<Float> probdList = new ArrayList<>();
+	List<Float> pwdList = new ArrayList<>();
+	List<Float> pQiDList = new ArrayList<>();
 	for (Integer d : ndDocs) {
 	    if (mapDocTf.containsKey(d)) {
 		tf = mapDocTf.get(d);
 	    } else {
 		tf = 0;
 	    }
-	    pwd = (tf + lambdaOrMU * (allTfCollection / colLength))
-		    / (Processor.getDocLength(d, fieldsProcs, reader)
+	    pwd = (tf + lambdaOrMU * (allTfCollection / (float) colLength))
+		    / ( ((float) Processor.getDocLength(d, fieldsProcs, reader))
 			    + lambdaOrMU);
-	    sumProb += probD * pwd * ndDocAndProb.get(d);
+	    pQiD = ndDocAndProb.get(d);
+	    sumProb += probD * pwd * pQiD;
+	    probdList.add(probD);
+	    pwdList.add(pwd);
+	    pQiDList.add(pQiD);
+	    
+	    /*
+	    System.out.println(pwd + " Tf:"+ tf + " |D|:" + Processor.getDocLength(d, fieldsProcs, reader)
+	    +" lambda:" + lambdaOrMU + "  Tfc:" + allTfCollection + " |C|:" + colLength + " Term: " + term);
+	    System.exit(1);
+	    */
 	}
-
-	return sumProb;
+	return new TermAndRanking(term, sumProb, probdList, pwdList, pQiDList);
     }
 }
