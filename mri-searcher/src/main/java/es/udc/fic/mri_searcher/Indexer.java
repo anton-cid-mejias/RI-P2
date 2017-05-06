@@ -18,7 +18,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.FieldInvertState;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -87,7 +86,8 @@ public class Indexer {
 
 	    for (List<String> cran : allCran) {
 		Document doc = new Document();
-		int counter = 0;
+		int counterT = 0;
+		int counterW = 0;
 		
 		// I
 		Field I = new StringField("I", cran.get(0),
@@ -98,14 +98,17 @@ public class Indexer {
 		Field T = new TextField("T", cran.get(1),
 			Field.Store.YES);
 		doc.add(T);
-		//Token counter
+		
+		//Token counter of T
 		TokenStream tokens = writer.getAnalyzer().tokenStream("T", T.stringValue());
 		tokens.reset();
 		while (tokens.incrementToken()){
-		    counter++;
+		    counterT++;
 		}
-		System.out.println(counter);
 		tokens.close();
+		Field TT = new StringField("TTokens", String.valueOf(counterT),
+			Field.Store.YES);
+		doc.add(TT);
 		
 		// A
 		Field A = new TextField("A", cran.get(2),
@@ -120,6 +123,17 @@ public class Indexer {
 		Field W = new TextField("W", cran.get(4),
 			Field.Store.YES);
 		doc.add(W);
+		
+		//Token counter of W
+		tokens = writer.getAnalyzer().tokenStream("W", W.stringValue());
+		tokens.reset();
+		while (tokens.incrementToken()){
+		    counterW++;
+		}
+		tokens.close();
+		Field TW = new StringField("WTokens", String.valueOf(counterW),
+			Field.Store.YES);
+		doc.add(TW);
 		
 		writer.addDocument(doc);
 
