@@ -7,9 +7,12 @@ public class TermTfIdf implements Comparable<TermTfIdf> {
     private int df;
     private final String term;
     private HashMap<Integer,Integer> tf;
+    private int numberDocuments;
+    private double idf = 0;
 
-    public TermTfIdf(String term) {
+    public TermTfIdf(String term, int numberDocuments) {
 	this.term = term;
+	this.numberDocuments = numberDocuments;
     }
 
     public void setDf(int df) {
@@ -27,6 +30,10 @@ public class TermTfIdf implements Comparable<TermTfIdf> {
     public String getTerm() {
         return term;
     }
+    
+    public double getIdf(){
+	return idf;
+    }
 
     public void plusOneDf(){
 	this.df++;;
@@ -34,6 +41,10 @@ public class TermTfIdf implements Comparable<TermTfIdf> {
     
     public HashMap<Integer, Integer> getTf() {
         return tf;
+    }
+    
+    public void calculateIdf(){
+	this.idf = Math.log(numberDocuments/df);
     }
 
     @Override

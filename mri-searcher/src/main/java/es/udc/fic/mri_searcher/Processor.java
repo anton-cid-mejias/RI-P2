@@ -1,27 +1,30 @@
 package es.udc.fic.mri_searcher;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.PostingsEnum;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.BytesRef;
 
 public class Processor {
 
 
-    public static void getTfIdf(IndexReader indexReader, List<String> fields,
-	    Map<String, Integer> termMap) throws IOException {
+    public static List<TermTfIdf> getTfIdf(IndexReader indexReader, List<String> fields) throws IOException {
 	Terms terms;
 	TermsEnum termsIterator;
 	BytesRef term;
 	List<TermTfIdf> listTerms = new ArrayList<>();
+	int numberDocuments = indexReader.numDocs();
 	
 	for (String field : fields) {
 	    terms = MultiFields.getTerms(indexReader, field);
@@ -31,11 +34,12 @@ public class Processor {
 		String termString = term.utf8ToString();
 		
 		TermTfIdf termTfIdf;
-		if (!listTerms.contains(new TermTfIdf(termString))){
-		    termTfIdf = new TermTfIdf(termString);
+		if (!listTerms.contains(new TermTfIdf(termString,numberDocuments))){
+		    termTfIdf = new TermTfIdf(termString,numberDocuments);
 		    termTfIdf.setTf(new HashMap<>());
+		    listTerms.add(termTfIdf);
 		}else{
-		    termTfIdf = new TermTfIdf(termString);
+		    termTfIdf = new TermTfIdf(termString,numberDocuments);
 		    int i = listTerms.indexOf(termTfIdf);
 		    termTfIdf = listTerms.get(i);
 		}
@@ -59,5 +63,17 @@ public class Processor {
 		}
 	    }
 	}
+	return listTerms;
+    }
+    
+    public static void main(String [] args) throws IOException{
+	
+	String dir = "/home/anton/lucene/Cran/indice";
+	Directory indir = FSDirectory.open(Paths.get(dir));
+	DirectoryReader reader = DirectoryReader.open(indir);
+	List<String> fields = new ArrayList<>();
+	fields.add("T");
+	fields.add("W");
+	getTfIdf(reader,fields);
     }
 }
