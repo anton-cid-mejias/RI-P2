@@ -1,54 +1,46 @@
 package es.udc.fic.mri_searcher;
 
+import java.util.HashMap;
+
 public class TermTfIdf implements Comparable<TermTfIdf> {
 
-    private final Double tfIdf;
-    private final Double tf;
-    private final Double idf;
+    private int df;
     private final String term;
-    private final Integer docId;
+    private HashMap<Integer,Integer> tf;
 
-    TermTfIdf(String term, int docId, double idf, double tf, double tfIdf) {
-	this.idf = idf;
+    public TermTfIdf(String term) {
 	this.term = term;
-	this.tf = tf;
-	this.tfIdf = tfIdf;
-	this.docId = docId;
     }
 
-    public Double getTfIdf() {
-	return tfIdf;
+    public void setDf(int df) {
+        this.df = df;
     }
 
-    public Double getTf() {
-	return tf;
+    public void setTf(HashMap<Integer, Integer> tf) {
+        this.tf = tf;
     }
 
-    public Double getIdf() {
-	return idf;
+    public int getDf() {
+        return df;
     }
 
     public String getTerm() {
-	return term;
+        return term;
     }
 
-    @Override
-    public int compareTo(TermTfIdf o) {
-	int lastCmp = tfIdf.compareTo(o.getTfIdf());
-	return (lastCmp != 0 ? lastCmp : term.compareTo(o.getTerm()));
+    public void plusOneDf(){
+	this.df++;;
     }
-
-    @Override
-    public String toString() {
-	return " term=" + term + " docId=" + docId + " tfIdf="
-		+ tfIdf + " tf=" + tf + " idf=" + idf;
+    
+    public HashMap<Integer, Integer> getTf() {
+        return tf;
     }
 
     @Override
     public int hashCode() {
 	final int prime = 31;
 	int result = 1;
-	result = prime * result + ((tfIdf == null) ? 0 : tfIdf.hashCode());
+	result = prime * result + ((term == null) ? 0 : term.hashCode());
 	return result;
     }
 
@@ -61,12 +53,18 @@ public class TermTfIdf implements Comparable<TermTfIdf> {
 	if (getClass() != obj.getClass())
 	    return false;
 	TermTfIdf other = (TermTfIdf) obj;
-	if (tfIdf == null) {
-	    if (other.tfIdf != null)
+	if (term == null) {
+	    if (other.term != null)
 		return false;
-	} else if (!tfIdf.equals(other.tfIdf))
+	} else if (!term.equals(other.term))
 	    return false;
 	return true;
     }
+
+    @Override
+    public int compareTo(TermTfIdf o) {
+	return 0;
+    }
+
 
 }
