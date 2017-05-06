@@ -8,7 +8,7 @@ public class TermTfIdf implements Comparable<TermTfIdf> {
     private final String term;
     private HashMap<Integer,Integer> tf;
     private int numberDocuments;
-    private double idf = 0;
+    private Double idf = 0.0;
 
     public TermTfIdf(String term, int numberDocuments) {
 	this.term = term;
@@ -74,7 +74,8 @@ public class TermTfIdf implements Comparable<TermTfIdf> {
 
     @Override
     public int compareTo(TermTfIdf o) {
-	return 0;
+	int lastCmp = idf.compareTo(o.getIdf());
+	return (lastCmp != 0 ? lastCmp : term.compareTo(o.getTerm()));
     }
 
 
