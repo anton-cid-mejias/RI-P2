@@ -296,6 +296,16 @@ public class Searcher {
 
 	    StringBuilder newQuery = new StringBuilder();
 	    for (int j = 0; j < tq; j++) {
+		/*
+		
+		Por la razón que sea la línea de abajo PETA
+		con index out of bounds
+		priorityList.get(j) esto está out of bounds
+		
+		
+		
+		*/
+		
 		newQuery.append(priorityList.get(j).getTerm());
 		newQuery.append(" ");
 	    }
