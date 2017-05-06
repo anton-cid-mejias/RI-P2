@@ -44,7 +44,7 @@ public class TermTfIdf implements Comparable<TermTfIdf> {
     }
     
     public void calculateIdf(){
-	this.idf = Math.log(numberDocuments/df);
+	this.idf = Math.log((double)numberDocuments/(double)df);
     }
 
     @Override

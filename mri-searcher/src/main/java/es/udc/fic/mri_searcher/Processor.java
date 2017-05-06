@@ -106,6 +106,10 @@ public class Processor {
 	List<String> fields = new ArrayList<>();
 	fields.add("T");
 	fields.add("W");
-	getTfIdf(reader, fields);
+	List<TermTfIdf> listTerms = getTfIdf(reader, fields);
+	List<Integer> docs = new ArrayList<>();
+	docs.add(1);
+	docs.add(2);
+	getBestTfIdfTerms(listTerms,docs);
     }
 }
