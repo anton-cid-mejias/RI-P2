@@ -119,7 +119,8 @@ public class Searcher {
 
 	// System.out.println("tq: " + tq + " td: " + td + " ndr: " + ndr);
 	if ((tq > 0) && (td > 0) && (ndr > 0)) {
-	    // rf1
+	    rf1(int1, int2, tq, td, ndr, reader, searcher, queries, parser,
+		    queriesRelevance, cut, top, fieldsVisual, fieldsProcs);
 	}
 
 	if ((tq == 0) && (td == 0) && (ndr > 0)) {
@@ -231,7 +232,97 @@ public class Searcher {
 		"MAP: " + (fullAveragePrecision / realNumberOfQueries));
     }
 
-    private static void rf1(int tq, int td, int ndr) {
+    private static void rf1(int int1, int int2, int tq, int td, int ndr,
+	    DirectoryReader reader, IndexSearcher searcher,
+	    List<List<String>> queries, MultiFieldQueryParser parser,
+	    List<QueryNumberRelevanceDoc> queriesRelevance, int cut, int top,
+	    List<String> fieldsVisual, List<String> fieldsProcs)
+	    throws IOException, ParseException {
+
+	List<String> actualQuery = null;
+	QueryNumberRelevanceDoc qd = null;
+	TopDocs topDocs = null;
+	List<ScoreDoc> scoreDocs = null;
+	RelevantDocumentsAndMetrics relDocsandMetrics = null;
+
+	// Metrics
+	float[] metrics = null;
+	float fullPrecision10 = 0;
+	float fullPrecision20 = 0;
+	float fullRecall10 = 0;
+	float fullRecall20 = 0;
+	float fullAveragePrecision = 0;
+	float realNumberOfQueries = 0;
+	String titles = null;
+
+	List<TermTfIdf> tfIdfList = Processor.getTfIdf(reader, fieldsProcs);
+	String[] queryWords;
+	Query finalQuery;
+
+	System.out.println();
+	System.out.println("Rf1:");
+	for (int i = int1; i <= int2; i++) {
+
+	    List<PriorityTerm> priorityList = new ArrayList<>();
+	    realNumberOfQueries++;
+
+	    actualQuery = queries.get(i - 1);
+	    String query = actualQuery.get(1);
+	    queryWords = query.split(" ");
+
+	    for (String term : queryWords) {
+		if (term.contains(".")) {
+		    continue;
+		}
+		int counter = 0;
+		for (TermTfIdf tfIdf : tfIdfList) {
+		    if (tfIdf.getTerm().equals(term)) {
+			priorityList.add(new PriorityTerm(counter, term));
+		    } else {
+			counter++;
+		    }
+		}
+	    }
+	    Collections.sort(priorityList);
+
+	    StringBuilder newQuery = new StringBuilder();
+	    for (int j = 0; j < tq; j++) {
+		newQuery.append(priorityList.get(j).getTerm());
+		newQuery.append(" ");
+	    }
+
+	    List<Integer> docs = new ArrayList<>();
+	    qd = queriesRelevance.get(i - 1);
+
+	    for (int j = 0; j < ndr; j++) {
+		docs.add(qd.getRelevanceDoc().get(j));
+	    }
+
+	    List<DocumentTerm> docList = Processor.getBestTfIdfTerms(tfIdfList,
+		    docs);
+	    for (int j = 0; j < td; j++) {
+		newQuery.append(docList.get(j).getTermString());
+		newQuery.append(" ");
+	    }
+
+	    finalQuery = parser.parse(newQuery.toString());
+	    topDocs = searcher.search(finalQuery,
+		    Math.max(20, Math.max(cut, top)));
+	    scoreDocs = Arrays.asList(topDocs.scoreDocs);
+
+	    metrics = printQueryInfo(i, cut, top, fieldsVisual, finalQuery, reader,
+		    queriesRelevance, relDocsandMetrics, scoreDocs);
+
+	    fullPrecision10 += metrics[0];
+	    fullPrecision20 += metrics[1];
+	    fullRecall10 += metrics[2];
+	    fullRecall20 += metrics[3];
+	    fullAveragePrecision += metrics[4];
+
+	}
+	printMeanQueryMetrics(realNumberOfQueries, fullPrecision10,
+		fullPrecision20, fullRecall10, fullRecall20,
+		fullAveragePrecision);
 
     }
 

@@ -64,6 +64,9 @@ public class Processor {
 		    }
 
 		}
+		if (term.equals("be")){
+		    System.out.println("be");
+		}
 	    }
 	}
 	for (TermTfIdf t:listTerms){
@@ -144,11 +147,10 @@ public class Processor {
 	fields.add("W");
 	List<TermTfIdf> listTerms = getTfIdf(reader, fields);
 	List<Integer> docs = new ArrayList<>();
-	docs.add(1);
-	docs.add(2);
+	docs.add(12);
 	getBestTfIdfTerms(listTerms,docs);
 	int n = getColLength(fields,reader);
-	int n2 = getDocLength(0,fields,reader);
+	int n2 = getDocLength(12,fields,reader);
 	System.out.println(n);
 	System.out.println(n2);
     }
