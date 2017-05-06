@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
@@ -98,6 +99,41 @@ public class Processor {
 	return documentsTermsList;
     }
     
+    public static int getDocLength(int doc, List<String> fields, DirectoryReader reader) throws IOException{
+	Document document = reader.document(doc);
+	int n = 0;
+	
+	for (String field : fields){
+	    if (field.equals("T")){
+		n += Integer.parseInt((document.get("TTokens")));
+	    }
+	    if (field.equals("W")){
+		n += Integer.parseInt((document.get("WTokens")));
+	    }
+	}
+	return n;
+    }
+    
+    public static int getColLength(List<String> fields, DirectoryReader reader) throws IOException{
+	int n = 0;
+	Document document;
+	
+	for (int i=0; i<reader.numDocs();i++){
+	    
+	    document = reader.document(i);
+	    
+	    for (String field : fields){
+		    if (field.equals("T")){
+			n += Integer.parseInt((document.get("TTokens")));
+		    }
+		    if (field.equals("W")){
+			n += Integer.parseInt((document.get("WTokens")));
+		    }
+		}
+	}
+	return n;
+    }
+    
     public static void main(String[] args) throws IOException {
 
 	String dir = "/home/anton/lucene/Cran/indice";
@@ -111,5 +147,9 @@ public class Processor {
 	docs.add(1);
 	docs.add(2);
 	getBestTfIdfTerms(listTerms,docs);
+	int n = getColLength(fields,reader);
+	int n2 = getDocLength(0,fields,reader);
+	System.out.println(n);
+	System.out.println(n2);
     }
 }
