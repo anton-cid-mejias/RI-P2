@@ -52,7 +52,8 @@ public class Processor {
 		while ((i = postingsEnum
 			.nextDoc()) != PostingsEnum.NO_MORE_DOCS) {
 		    int freq = postingsEnum.freq();
-
+		    i++;
+		    
 		    if (termTfIdf.getTf().containsKey(i)) {
 			int tf = termTfIdf.getTf().get(i);
 			tf += freq;
