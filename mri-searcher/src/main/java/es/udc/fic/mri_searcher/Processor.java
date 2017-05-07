@@ -91,7 +91,7 @@ public class Processor {
 			tf = 1 + Math.log(tf);
 			double tfIdf = term.getIdf() * tf;
 			documentsTermsList
-				.add(new DocumentTerm(tfIdf, term.getTerm()));
+				.add(new DocumentTerm(tfIdf,tf ,term.getIdf(),term.getTerm()));
 			done = true;
 		    }
 		}
@@ -101,7 +101,7 @@ public class Processor {
 	Collections.sort(documentsTermsList);
 	return documentsTermsList;
     }
-    
+
     public static int getDocLength(int doc, List<String> fields, DirectoryReader reader) throws IOException{
 	Document document = reader.document(doc);
 	int n = 0;

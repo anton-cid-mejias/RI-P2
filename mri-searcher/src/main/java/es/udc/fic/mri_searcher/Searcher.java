@@ -96,15 +96,17 @@ public class Searcher {
 	    queryString = actualQuery.get(1).replaceAll("\\?", "")
 		    .replaceAll("\n", " ");
 	    query = parser.parse(queryString);
-	    //This was done to extract the words the query used (no stopwords)
+	    // This was done to extract the words the query used (no stopwords)
 	    if (fieldsProcs.contains("T")) {
 		queryString = query.toString("T").replaceAll("\\(", "")
 			.replaceAll("\\)", "").replaceAll("W:", "");
-		queryString = Arrays.stream(queryString.split(" ")).distinct().collect(Collectors.joining(" "));
+		queryString = Arrays.stream(queryString.split(" ")).distinct()
+			.collect(Collectors.joining(" "));
 	    } else if (fieldsProcs.contains("W")) {
 		queryString = query.toString("T").replaceAll("\\(", "")
 			.replaceAll("\\)", "").replaceAll("T:", "");
-		queryString = Arrays.stream(queryString.split(" ")).distinct().collect(Collectors.joining(" "));
+		queryString = Arrays.stream(queryString.split(" ")).distinct()
+			.collect(Collectors.joining(" "));
 
 	    }
 	    topDocs = searcher.search(query, Math.max(20, Math.max(cut, top)));
@@ -130,7 +132,8 @@ public class Searcher {
 	// System.out.println("tq: " + tq + " td: " + td + " ndr: " + ndr);
 	if ((tq > 0) && (td > 0) && (ndr > 0)) {
 	    rf1(int1, int2, tq, td, ndr, reader, searcher, queries, parser,
-		    queriesRelevance, cut, top, fieldsVisual, fieldsProcs);
+		    queriesRelevance, cut, top, fieldsVisual, fieldsProcs,
+		    explain);
 	}
 
 	if ((tq == 0) && (td == 0) && (ndr > 0)) {
@@ -246,8 +249,8 @@ public class Searcher {
 	    DirectoryReader reader, IndexSearcher searcher,
 	    List<List<String>> queries, MultiFieldQueryParser parser,
 	    List<QueryNumberRelevanceDoc> queriesRelevance, int cut, int top,
-	    List<String> fieldsVisual, List<String> fieldsProcs)
-	    throws IOException, ParseException {
+	    List<String> fieldsVisual, List<String> fieldsProcs,
+	    boolean explain) throws IOException, ParseException {
 
 	List<String> actualQuery = null;
 	QueryNumberRelevanceDoc qd = null;
@@ -286,8 +289,10 @@ public class Searcher {
 		int counter = 0;
 		for (TermTfIdf tfIdf : tfIdfList) {
 		    if (tfIdf.getTerm().equals(term)) {
-			if (!priorityList.contains(new PriorityTerm(counter, term))){
-			    priorityList.add(new PriorityTerm(counter, term));
+			if (!priorityList.contains(new PriorityTerm(counter,
+				term, tfIdf.getIdf()))) {
+			    priorityList.add(new PriorityTerm(counter, term,
+				    tfIdf.getIdf()));
 			}
 		    } else {
 			counter++;
@@ -297,11 +302,11 @@ public class Searcher {
 	    Collections.sort(priorityList);
 
 	    StringBuilder newQuery = new StringBuilder();
-	    
-	    if (!(tq<priorityList.size())){
-		tq = priorityList.size()-1;
+
+	    if (!(tq < priorityList.size())) {
+		tq = priorityList.size() - 1;
 	    }
-	    
+
 	    for (int j = 0; j < tq; j++) {
 		newQuery.append(priorityList.get(j).getTerm());
 		newQuery.append(" ");
@@ -310,8 +315,8 @@ public class Searcher {
 	    List<Integer> docs = new ArrayList<>();
 	    qd = queriesRelevance.get(i - 1);
 
-	    if (ndr>(qd.getRelevanceDoc().size()-1)){
-		ndr = qd.getRelevanceDoc().size()-1;
+	    if (ndr > (qd.getRelevanceDoc().size() - 1)) {
+		ndr = qd.getRelevanceDoc().size() - 1;
 	    }
 	    for (int j = 0; j < ndr; j++) {
 		docs.add(qd.getRelevanceDoc().get(j));
@@ -338,11 +343,32 @@ public class Searcher {
 	    fullRecall20 += metrics[3];
 	    fullAveragePrecision += metrics[4];
 
+	    if (explain) {
+		explainRf1(priorityList, docList, tq, td);
+	    }
+
 	}
 	printMeanQueryMetrics(realNumberOfQueries, fullPrecision10,
 		fullPrecision20, fullRecall10, fullRecall20,
 		fullAveragePrecision);
 
+    }
+
+    private static void explainRf1(List<PriorityTerm> priorityList,
+	    List<DocumentTerm> docList, int tq, int td) {
+	System.out.println("\nExplain:");
+	System.out.println("Query words:");
+	for (int i = 0; i < tq; i++) {
+	    System.out.println(priorityList.get(i).getTerm() + " idf="
+		    + priorityList.get(i).getIdf());
+	}
+	System.out.println("\nDoc words:");
+	for (int j = 0; j < td; j++) {
+	    System.out.println(docList.get(j).getTermString() + " tf="
+		    + docList.get(j).getTf() + " idf="
+		    + docList.get(j).getIdf());
+	}
+	System.out.println("");
     }
 
     private static void rf2(int ndr, int int1, int int2, DirectoryReader reader,
@@ -492,23 +518,21 @@ public class Searcher {
 			    tf = 0;
 			}
 		    }
-		    
-		    probForAllTermsQueryInDoc = probForAllTermsQueryInDoc * 
-			    ((float) tf
-			    / (float) Processor.getDocLength(i, fieldsProcs, reader));
-		    //System.out.println("Tf= " + tf + " for term " + term + " in doc " + (i + 1));
-		    //System.out.println(probForAllTermsQueryInDoc);
-		    
+
+		    probForAllTermsQueryInDoc = probForAllTermsQueryInDoc
+			    * ((float) tf / (float) Processor.getDocLength(i,
+				    fieldsProcs, reader));
+		    // System.out.println("Tf= " + tf + " for term " + term + "
+		    // in doc " + (i + 1));
+		    // System.out.println(probForAllTermsQueryInDoc);
+
 		}
-		/* Try to catch ∏=1,n P(qi|D) != 0
-		if (probForAllTermsQueryInDoc > 0){
-		    System.out.println("Doc: " +(i+1) + " Value:" + probForAllTermsQueryInDoc);
-		    //System.exit(1);
-		    try {
-			Thread.sleep(4000);
-		    } catch (InterruptedException e) {}
-		}
-		*/
+		/*
+		 * Try to catch ∏=1,n P(qi|D) != 0 if (probForAllTermsQueryInDoc
+		 * > 0){ System.out.println("Doc: " +(i+1) + " Value:" +
+		 * probForAllTermsQueryInDoc); //System.exit(1); try {
+		 * Thread.sleep(4000); } catch (InterruptedException e) {} }
+		 */
 		ndDocAndProb.put(i, probForAllTermsQueryInDoc);
 	    }
 
@@ -556,7 +580,7 @@ public class Searcher {
 	    fullAveragePrecision += metrics[4];
 	    ///////////////////////
 
-	    if (explain){
+	    if (explain) {
 		explainPrf(nw, ndDocs, termsAndRankings);
 	    }
 
@@ -569,7 +593,7 @@ public class Searcher {
     }
 
     private static void explainPrf(int nw, List<Integer> ndDocs,
-	List<TermAndRanking> termsAndRankings) {
+	    List<TermAndRanking> termsAndRankings) {
 	List<Float> probdList = null;
 	List<Float> pwdList = null;
 	List<Float> pQiDList = null;
@@ -577,19 +601,19 @@ public class Searcher {
 	int j = 0;
 	for (TermAndRanking tR : termsAndRankings) {
 	    i++;
-	    j=0;
+	    j = 0;
 	    System.out.println("For the term: " + tR.getTerm());
 	    probdList = tR.getProbdList();
 	    pwdList = tR.getPwdList();
 	    pQiDList = tR.getpQiDList();
 	    for (Integer d : ndDocs) {
-		System.out.println("D=" + (d+1) + " P(D)=" + probdList.get(j)
+		System.out.println("D=" + (d + 1) + " P(D)=" + probdList.get(j)
 			+ " P(w|D)=" + pwdList.get(j) + " ∏=1,n P(qi|D)="
 			+ pQiDList.get(j));
 		j++;
 	    }
 	    System.out.println();
-	    if (i >= nw){
+	    if (i >= nw) {
 		break;
 	    }
 	}
@@ -628,7 +652,7 @@ public class Searcher {
 	float allTfCollection = 0;
 	for (int i = 0; i < 1400; i++) {
 	    if (mapDocTf.containsKey(i)) {
-		allTfCollection += (float)mapDocTf.get(i);
+		allTfCollection += (float) mapDocTf.get(i);
 	    }
 	}
 
@@ -643,20 +667,21 @@ public class Searcher {
 	    } else {
 		tf = 0;
 	    }
-	    pwd = ((float)1 - lambdaOrMU)
-		    * (tf / (float) Processor.getDocLength(d, fieldsProcs, reader))
+	    pwd = ((float) 1 - lambdaOrMU) * (tf
+		    / (float) Processor.getDocLength(d, fieldsProcs, reader))
 		    + lambdaOrMU * (allTfCollection / (float) colLength);
 	    pQiD = ndDocAndProb.get(d);
 	    sumProb += probD * pwd * pQiD;
 	    probdList.add(probD);
 	    pwdList.add(pwd);
 	    pQiDList.add(pQiD);
-	    
+
 	    /*
-	    System.out.println(pwd + " Tf:"+ tf + " |D|:" + Processor.getDocLength(d, fieldsProcs, reader)
-	    +" lambda:" + lambdaOrMU + "  Tfc:" + allTfCollection + " |C|:" + colLength + " Term: " + term);
-	    System.exit(1);
-	    */
+	     * System.out.println(pwd + " Tf:"+ tf + " |D|:" +
+	     * Processor.getDocLength(d, fieldsProcs, reader) +" lambda:" +
+	     * lambdaOrMU + "  Tfc:" + allTfCollection + " |C|:" + colLength +
+	     * " Term: " + term); System.exit(1);
+	     */
 	}
 
 	return new TermAndRanking(term, sumProb, probdList, pwdList, pQiDList);
@@ -680,7 +705,7 @@ public class Searcher {
 	for (int i = 0; i < 1400; i++) {
 	    if (mapDocTf.containsKey(i)) {
 		allTfCollection += (float) mapDocTf.get(i);
-	    }else {
+	    } else {
 	    }
 	}
 
@@ -696,19 +721,20 @@ public class Searcher {
 		tf = 0;
 	    }
 	    pwd = (tf + lambdaOrMU * (allTfCollection / (float) colLength))
-		    / ( ((float) Processor.getDocLength(d, fieldsProcs, reader))
+		    / (((float) Processor.getDocLength(d, fieldsProcs, reader))
 			    + lambdaOrMU);
 	    pQiD = ndDocAndProb.get(d);
 	    sumProb += probD * pwd * pQiD;
 	    probdList.add(probD);
 	    pwdList.add(pwd);
 	    pQiDList.add(pQiD);
-	    
+
 	    /*
-	    System.out.println(pwd + " Tf:"+ tf + " |D|:" + Processor.getDocLength(d, fieldsProcs, reader)
-	    +" lambda:" + lambdaOrMU + "  Tfc:" + allTfCollection + " |C|:" + colLength + " Term: " + term);
-	    System.exit(1);
-	    */
+	     * System.out.println(pwd + " Tf:"+ tf + " |D|:" +
+	     * Processor.getDocLength(d, fieldsProcs, reader) +" lambda:" +
+	     * lambdaOrMU + "  Tfc:" + allTfCollection + " |C|:" + colLength +
+	     * " Term: " + term); System.exit(1);
+	     */
 	}
 	return new TermAndRanking(term, sumProb, probdList, pwdList, pQiDList);
     }

@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.apache.lucene.queryparser.classic.ParseException;
 
-import es.udc.fic.util.IndexingModelWriter;
-
 public class SearcherUI {
     public static void main(String[] args) throws IOException, ParseException {
 

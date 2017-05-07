@@ -4,17 +4,23 @@ public class PriorityTerm implements Comparable<PriorityTerm>{
     
     private final Integer priority;
     private final String term;
+    private final double idf;
     
-    public PriorityTerm(int priority, String term) {
+    public PriorityTerm(int priority, String term, double idf) {
 	super();
 	this.priority = priority;
 	this.term = term;
+	this.idf = idf;
     }
     public int getPriority() {
         return priority;
     }
     public String getTerm() {
         return term;
+    }
+    
+    public double getIdf(){
+	return idf;
     }
     
     @Override
