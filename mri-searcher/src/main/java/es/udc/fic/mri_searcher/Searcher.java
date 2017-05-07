@@ -286,7 +286,9 @@ public class Searcher {
 		int counter = 0;
 		for (TermTfIdf tfIdf : tfIdfList) {
 		    if (tfIdf.getTerm().equals(term)) {
-			priorityList.add(new PriorityTerm(counter, term));
+			if (!priorityList.contains(new PriorityTerm(counter, term))){
+			    priorityList.add(new PriorityTerm(counter, term));
+			}
 		    } else {
 			counter++;
 		    }
@@ -295,17 +297,12 @@ public class Searcher {
 	    Collections.sort(priorityList);
 
 	    StringBuilder newQuery = new StringBuilder();
+	    
+	    if (!(tq<priorityList.size())){
+		tq = priorityList.size()-1;
+	    }
+	    
 	    for (int j = 0; j < tq; j++) {
-		/*
-		
-		Por la razón que sea la línea de abajo PETA
-		con index out of bounds
-		priorityList.get(j) esto está out of bounds
-		
-		
-		
-		*/
-		
 		newQuery.append(priorityList.get(j).getTerm());
 		newQuery.append(" ");
 	    }
@@ -313,6 +310,9 @@ public class Searcher {
 	    List<Integer> docs = new ArrayList<>();
 	    qd = queriesRelevance.get(i - 1);
 
+	    if (ndr>(qd.getRelevanceDoc().size()-1)){
+		ndr = qd.getRelevanceDoc().size()-1;
+	    }
 	    for (int j = 0; j < ndr; j++) {
 		docs.add(qd.getRelevanceDoc().get(j));
 	    }
