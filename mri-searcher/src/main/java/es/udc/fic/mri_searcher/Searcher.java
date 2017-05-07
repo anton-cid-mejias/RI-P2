@@ -324,6 +324,10 @@ public class Searcher {
 
 	    List<DocumentTerm> docList = Processor.getBestTfIdfTerms(tfIdfList,
 		    docs);
+	    
+	    if (td > (docList.size() - 1)) {
+		td = docList.size() - 1;
+	    }
 	    for (int j = 0; j < td; j++) {
 		newQuery.append(docList.get(j).getTermString());
 		newQuery.append(" ");
